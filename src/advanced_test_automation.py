@@ -15,9 +15,9 @@ class AdvancedTestAutomation(object):
 
     def read_data(self, path):
         self.data = DataReader(path)
-        
+
     def preprocess(self):
-        word_preprocessing = WordPreprocessor(self.data.entities, self.data.acronyms, split_by="sentence")
+        word_preprocessing = WordPreprocessor(self.data.entities, self.data.aliases, split_by_sentence=True)
         docs = word_preprocessing.preprocess(self.data.docs)
         test_steps = word_preprocessing.preprocess(self.data.test_steps)
         test_blocks = word_preprocessing.preprocess(self.data.test_blocks)
