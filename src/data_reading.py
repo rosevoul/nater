@@ -11,6 +11,7 @@ class DataReader(object):
 		self.test_steps = self.read_test_steps()
 		self.test_blocks = self.read_test_blocks()
 		self.implemented_tests = self.read_implemented_tests()
+		self.human_blocks, self.human_blocks_children = self.read_human_blocks() 
 		self.entities = self.read_entities()
 		self.aliases = self.read_aliases()
 
@@ -96,6 +97,13 @@ class DataReader(object):
 		implemented_tests = self.get_files(implemented_tests_path, ".csv")
 
 		return implemented_tests
+
+	def read_human_blocks(self):
+		human_blocks_path = os.path.join(self.path, "parsed/test-blocks")
+		human_blocks = pd.read_csv(human_blocks_path + "/human_blocks_with_children.csv")
+		human_blocks_children = pickle.load(open(human_blocks_path + "human_blocks_children.bin", "rb"))
+
+		return (human_blocks, human_blocks_children)
 
 	def read_entities(self):
 		entities_path = os.path.join(self.path, "parsed/entities.csv")

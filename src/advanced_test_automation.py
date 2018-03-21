@@ -30,7 +30,9 @@ class AdvancedTestAutomation(object):
 
         model = WordEmbeddings.generate_model([docs, self.test_blocks, self.test_steps], method="cbow")
 
-        associations = AssociationAnalysis.associate_blocks(self.data.implemented_tests)
+        associator = AssociationAnalysis(self.data.implemented_tests, self.data.test_blocks, 
+                                            self.data.human_blocks, self.data.human_blocks_children)
+        associations = associator.associate_blocks()
 
     def suggest_matches(self):
         pass
