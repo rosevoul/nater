@@ -24,7 +24,8 @@ class AdvancedTestAutomation(object):
 
         lexicon = LexiconCreator.create(base_corpus=docs)
 
-        spell_corrector = SpellCorrector(lexicon)
+        spell_corrector = SpellCorrector("lexicon.txt")
+        
         self.test_steps = spell_corrector.correct(test_steps)
         self.test_blocks = spell_corrector.correct(test_blocks)
 
