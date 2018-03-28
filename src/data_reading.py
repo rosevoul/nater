@@ -9,7 +9,7 @@ class DataReader(object):
 		self.path = path
 		self.docs = self.read_docs()
 		self.test_steps = self.read_test_steps()
-		self.test_blocks = self.read_test_blocks()
+		self.test_blocks, self.test_blocks_info = self.read_test_blocks()
 		self.implemented_tests = self.read_implemented_tests()
 		self.human_blocks, self.human_blocks_children = self.read_human_blocks() 
 		self.entities = self.read_entities()
@@ -26,51 +26,51 @@ class DataReader(object):
 		implemented_test_scenarios_files = list(implemented_test_scenarios_files_dict.keys())
 		implemented_test_scenarios_files = [f for f in implemented_test_scenarios_files[4:] if f != "REDUNDANCY_CONCEPT"]
 		
-		implemented_test_scenarios_data = []
+		implemented_test_scenarios_info = []
 		for file in implemented_test_scenarios_files:
-			implemented_test_scenarios_data.extend(self.read_excel(implemented_test_scenarios_file_path, file, 1, None))
-			implemented_test_scenarios_data.extend(self.read_excel(implemented_test_scenarios_file_path, file, 2, None))
-			implemented_test_scenarios_data.extend(self.read_excel(implemented_test_scenarios_file_path, file, 3, None))
+			implemented_test_scenarios_info.extend(self.read_excel(implemented_test_scenarios_file_path, file, 1, None))
+			implemented_test_scenarios_info.extend(self.read_excel(implemented_test_scenarios_file_path, file, 2, None))
+			implemented_test_scenarios_info.extend(self.read_excel(implemented_test_scenarios_file_path, file, 3, None))
 
 		print("Implemented test scenarios files... Done.")
 
 		# Read data from Test scenarios (Excel files)
-		test_scenarios_data = []
+		test_scenarios_info = []
 		test_scenarios_files = self.get_files(test_scenarios_dir_path, ".xlsx")
 
 		for file in test_scenarios_files:
-			test_scenarios_data.extend(self.read_excel(file, "Requirements", "Req Name", 1))
-			test_scenarios_data.extend(self.read_excel(file, "Requirements", "Description", 1))
-			test_scenarios_data.extend(self.read_excel(file, "Test Design Steps", "Test Design Step Name", 1))
-			test_scenarios_data.extend(self.read_excel(file, "Test Design Steps", "Test Name", 1))
-			test_scenarios_data.extend(self.read_excel(file, "Test Design Steps", "Test Design Description", 1))
-			test_scenarios_data.extend(self.read_excel(file, "Test Design Steps", "Test Design Expected Result", 1))
+			test_scenarios_info.extend(self.read_excel(file, "Requirements", "Req Name", 1))
+			test_scenarios_info.extend(self.read_excel(file, "Requirements", "Description", 1))
+			test_scenarios_info.extend(self.read_excel(file, "Test Design Steps", "Test Design Step Name", 1))
+			test_scenarios_info.extend(self.read_excel(file, "Test Design Steps", "Test Name", 1))
+			test_scenarios_info.extend(self.read_excel(file, "Test Design Steps", "Test Design Description", 1))
+			test_scenarios_info.extend(self.read_excel(file, "Test Design Steps", "Test Design Expected Result", 1))
 
 		print("Test scenarios files... Done.")
 
 		# Read data from Requirements (Excel files)
-		requirements_data = []
+		requirements_info = []
 		requirements_files = self.get_files(requirements_dir_path, ".xlsx")
 
 		for file in requirements_files:
-			requirements_data.extend(self.read_excel(file,"Sheet1", "Description"))
+			requirements_info.extend(self.read_excel(file,"Sheet1", "Description"))
 
 		print("Requirements files... Done.")
 
 		# Read data from Documentation (Word files)
-		documentation_data = []
+		documentation_info = []
 		documentation_files = self.get_files(documentation_dir_path, ".docx", include_subdirs=True)
 		
 		for file in documentation_files:
-			documentation_data.extend(self.read_word(file))
+			documentation_info.extend(self.read_word(file))
 		print("Documentation files... Done.")
 
 		# Merge data
 		docs = []
-		docs.extend(implemented_test_scenarios_data)
-		docs.extend(test_scenarios_data)
-		docs.extend(requirements_data)
-		docs.extend(documentation_data)
+		docs.extend(implemented_test_scenarios_info)
+		docs.extend(test_scenarios_info)
+		docs.extend(requirements_info)
+		docs.extend(documentation_info)
 
 		return docs
 
@@ -86,11 +86,11 @@ class DataReader(object):
 	def read_test_blocks(self):
 		"""Read extracted descriptions from machine -high level- test blocks (CSV file) """
 		test_blocks_file_path = os.path.join(self.path, "parsed/test-blocks/machine_blocks.csv")
-		test_blocks_data = pd.read_csv(test_blocks_file_path)
-		test_blocks = test_blocks_data["description"].tolist()
+		test_blocks_info = pd.read_csv(test_blocks_file_path)
+		test_blocks = test_blocks_info["description"].tolist()
 		print("Test blocks... Done.")
 
-		return test_blocks
+		return (test_blocks,test_blocks_info)
 
 	def read_implemented_tests(self):
 		implemented_tests_path = os.path.join(self.path, "parsed/implemented-tests")
@@ -101,7 +101,7 @@ class DataReader(object):
 	def read_human_blocks(self):
 		human_blocks_path = os.path.join(self.path, "parsed/test-blocks")
 		human_blocks = pd.read_csv(human_blocks_path + "/human_blocks_with_children.csv")
-		human_blocks_children = pickle.load(open(human_blocks_path + "human_blocks_children.bin", "rb"))
+		human_blocks_children = pickle.load(open(human_blocks_path + "/human_blocks_children.bin", "rb"))
 
 		return (human_blocks, human_blocks_children)
 
@@ -116,16 +116,16 @@ class DataReader(object):
 
 	def read_aliases(self):
 		aliases_path = os.path.join(self.path, "parsed/aliases.csv")
-		aliases_data = pd.read_csv(aliases_path)
-		aliases = aliases_data['Alias'].tolist()
-		names = aliases_data['Name'].tolist()
+		aliases_info = pd.read_csv(aliases_path)
+		aliases = aliases_info['Alias'].tolist()
+		names = aliases_info['Name'].tolist()
 		
 		return (aliases, names)
 	
 	@staticmethod
 	def read_excel(file, sheet, column, header_row=0):	
-		excel_dataframe = pd.read_excel(file, sheet_name=sheet, header=header_row).astype(str)
-		text_list = excel_dataframe[column].values.tolist()
+		excel_infoframe = pd.read_excel(file, sheet_name=sheet, header=header_row).astype(str)
+		text_list = excel_infoframe[column].values.tolist()
 
 		return text_list
 

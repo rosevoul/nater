@@ -1,4 +1,6 @@
 import re
+from nltk import word_tokenize, sent_tokenize
+import string
 
 class WordPreprocessor(object):
     """Preprocess text word-wise"""
@@ -25,12 +27,12 @@ class WordPreprocessor(object):
     def __init__(self, entities, aliases, split_by_sentence=False):
         self.entities = entities
         self.aliases = aliases
-        self.split_by = split_by
+        self.split_by_sentence = split_by_sentence
 
         self.split_data_words = []
 
         self.patterns = [(re.compile(regex), repl)
-                         for (regex, repl) in REPLACEMENT_PATTERNS]
+                         for (regex, repl) in self.REPLACEMENT_PATTERNS]
 
     def split(self, data):
         # Convert 'nan' to "" (empty string)
@@ -52,7 +54,7 @@ class WordPreprocessor(object):
         # Lowercase
         # Replace '\n' with " " (whitespace)
         # Remove all the punctuation
-        self.split(text)
+        self.split(data)
         preprocessed_data = []
         for words in self.split_data_words:
             clean_words = [w for w in words if not w.isnumeric()]

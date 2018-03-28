@@ -1,18 +1,20 @@
 import numpy as np
 from nltk import pos_tag
+from sklearn.metrics.pairwise import cosine_similarity
 
 def similarity_vector(sent, model):
-	sent_vectors = np.empty((0,100), dtype=float32)
+	sent_vectors = np.empty((0,100), dtype="float32")
 	for word in sent:
 		word_vector = model.wv[word]
 		sent_vectors = np.append(sent_vectors, np.array([word_vector]), axis=0)
 
-	mean_vector = np.mean(sent_vectors)
-	std_vector = np.std(sent_vectors)
-	max_vector = np.max(sent_vectors)
-	min_vector = np.min(sent_vectors)
+	mean_vector = np.mean(sent_vectors, axis=0)
+	std_vector = np.std(sent_vectors, axis=0)
+	max_vector = np.max(sent_vectors, axis=0)
+	min_vector = np.min(sent_vectors, axis=0)
+
 	# Add the metrics' vectors to one vector; this is the similarity vector
-	similarity_vector = numpy.concatenate((mean_vector, std_vector, max_vector, min_vector), axis=0)
+	similarity_vector = np.concatenate([mean_vector, std_vector, max_vector, min_vector])
 
 	return similarity_vector
 
@@ -37,7 +39,7 @@ def most_similar_test_block(step, model, test_blocks, threshold=0.8, method="sen
 		step_vector = similarity_vector(step, model)
 		block_vector = similarity_vector(block, model) # TODO precalculate the similarity vectors of the blocks
 		# calculate the similarity and save in array
-		similarities.append(similarity(step_vector, block_vector))
+		similarities.append(cosine_similarity([step_vector], [block_vector])[0][0])
 
 	# Return the block description that is matching the highest similarity
 	top_similarity = max(similarities)
@@ -45,7 +47,7 @@ def most_similar_test_block(step, model, test_blocks, threshold=0.8, method="sen
 		return "None_similar"
 
 	# Get index of top similarity
-	most_similar_block = test_blocks.index(top_similarity)
+	most_similar_block = test_blocks[np.argmax(similarities)]
 
 	return most_similar_block
 

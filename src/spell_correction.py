@@ -25,9 +25,11 @@ class SpellCorrector(object):
 		self.max_dist = max_dist
 
 	def correct(self, text):
-		corrected_text = [self.correct_word(word) for sentence in text for word in sentence]
+		for s, sentence in enumerate(text):
+			for w, word in enumerate(sentence):
+				text[s][w] = self.correct_word((word))
 
-		return corrected_text
+		return text
 
 	def correct_word(self, word):
 	    """Search if the given word exists in the dictionary. If the word is not found, replace it with the first word

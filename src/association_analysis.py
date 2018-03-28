@@ -1,41 +1,45 @@
 import pandas as pd
+from orangecontrib.associate.fpgrowth import *  
 
 class AssociationAnalysis(object):
     """Perform Association Analysis on test block diagrams with tree structure"""
-    def __init__(self, implemented_tests, test_blocks, human_blocks, human_blocks_children):
+    def __init__(self, implemented_tests, test_blocks, human_blocks, human_blocks_children, path):
         self.implemented_tests = implemented_tests
         self.test_blocks = test_blocks
         self.human_blocks = human_blocks
         self.human_blocks_children = human_blocks
+        self.path = path
     
     def associate_blocks(self):
-        sets_names, sets_occur = self.associate(self.preprocess_blocks())
+        assoc_sets_names, assoc_sets_occur = self.associate(self.preprocess_blocks())
 
-        # Compare association sets with children lists
-        occurences = []
-        indices = []
+        return assoc_sets_names
 
-        for i, children in enumerate(self.human_blocks_children):
-            for j, pair in enumerate(assoc_sets_names):
-                if set(children) == set(pair):
-                    occurences.append(assoc_sets_occur[j])
-                    indices.append(i)
+        # # Compare association sets with children lists
+        # occurences = []
+        # indices = []
+
+        # for i, children in enumerate(self.human_blocks_children):
+        #     for j, pair in enumerate(assoc_sets_names):
+        #         if set(children) == set(pair):
+        #             occurences.append(assoc_sets_occur[j])
+        #             indices.append(i)
         
-        # Find the chunk of the children that matched with sets based on indices
-        assoc_result = self.human_blocks.iloc[indices]
-        # Add a column of occurences
-        assoc_result["occurrences"] = occurences
-        assoc_result = assoc_result.drop_duplicates(subset=['name'])
-        assoc_result = assoc_result.reset_index(drop=True)
-        assoc_result = assoc_result.sort_values(by=['occurrences'], ascending=False)
-        assoc_result.to_csv("matches_result.csv")
+        # # Find the chunk of the children that matched with sets based on indices
+        # assoc_result = self.human_blocks.iloc[indices]
+        # # Add a column of occurences
+        # assoc_result["occurrences"] = occurences
+        # assoc_result = assoc_result.drop_duplicates(subset=['name'])
+        # assoc_result = assoc_result.reset_index(drop=True)
+        # assoc_result = assoc_result.sort_values(by=['occurrences'], ascending=False)
+        # assoc_result.to_csv("matches_result.csv")
 
-        return assoc_result
+        # return assoc_result
 
     def preprocess_blocks(self):
         # Iterate through the tests and find the sets of blocks
         all_named_sets = []
-        for test_csv in implemented_tests:
+        for test_csv in self.implemented_tests:
             test = pd.read_csv(test_csv)
             groups = dict(tuple(test.groupby('testcase')))
             
@@ -44,7 +48,7 @@ class AssociationAnalysis(object):
                 all_named_sets.extend(test_sets)
 
         # Index using the test blocks' names
-        index_sets = self.assign_id(all_named_sets, test_blocks)
+        index_sets = self.assign_id(all_named_sets, self.test_blocks)
         clean_index_sets = self.cleanup(index_sets)
 
         return clean_index_sets
@@ -63,7 +67,7 @@ class AssociationAnalysis(object):
 
         # Save in dataframe
         associations = pd.DataFrame({'names': named_sets, 'occurences': occur_list, 'indices': sets_list})
-        associations.to_csv("associations.csv")
+        associations.to_csv(self.path + "/tmp/associations.csv")
 
         return (named_sets, occur_list)
 
