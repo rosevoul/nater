@@ -1,3 +1,4 @@
 __pycache__/
 *.py[cod]
 /data
+/tmp_specific_data_investigation
