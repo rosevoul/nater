@@ -109,8 +109,8 @@ class DataReader(object):
 		entities_path = os.path.join(self.path, "parsed/entities.csv")
 		entities = pd.read_csv(entities_path)
 		parameters = entities['Parameters'].tolist()
-		applications = entities['Applications'].tolist()
-		systems = entities['Systems'].tolist()
+		applications = entities['Applications'].dropna().tolist()
+		systems = entities['Systems'].dropna().tolist()
 
 		return (parameters, applications, systems)
 
