@@ -6,12 +6,10 @@ class WordEmbeddings(object):
 		self.arg = arg
 
 	@staticmethod
-	def generate_model(text_input, method):
+	def generate_model(dataset, method):
 
-		training_data = []
-		for lst in text_input:
-			training_data.extend(lst)
-
+		training_data = dataset
+		
 		if method is "skipgram":
 			model = Word2Vec(training_data, min_count=1, size=100, window=5, sg=1)
 		else:

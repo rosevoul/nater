@@ -14,6 +14,7 @@ class DataReader(object):
 		self.human_blocks, self.human_blocks_children = self.read_human_blocks() 
 		self.entities = self.read_entities()
 		self.aliases = self.read_aliases()
+		self.correct_spelled_data = self.read_correct_spelled_data()
 
 	def read_docs(self):
 		implemented_test_scenarios_file_path = os.path.join(self.path, "implemented-test-scenarios/TESTS.xlsx")
@@ -122,6 +123,16 @@ class DataReader(object):
 		
 		return (aliases, names)
 	
+	def read_correct_spelled_data(self):
+		sum_documents_dir_path = os.path.join(self.path, "sum_docs")
+		correct_spelled_data = []
+		sum_documents = self.get_files(sum_documents_dir_path, ".docx")
+		for file in sum_documents:
+			correct_spelled_data.extend(self.read_word(file))
+		print("Correct spelled data... Done.")
+
+		return correct_spelled_data
+
 	@staticmethod
 	def read_excel(file, sheet, column, header_row=0):	
 		excel_infoframe = pd.read_excel(file, sheet_name=sheet, header=header_row).astype(str)

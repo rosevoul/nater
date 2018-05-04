@@ -26,10 +26,15 @@ class SpellCorrector(object):
 
 	def correct(self, text):
 		for s, sentence in enumerate(text):
-			for w, word in enumerate(sentence):
-				text[s][w] = self.correct_word((word))
+			text[s] = self.correct_sentence((sentence))
 
 		return text
+
+	def correct_sentence(self, sentence):
+		for w, word in enumerate(sentence):
+			sentence[w] = self.correct_word((word))
+
+		return sentence
 
 	def correct_word(self, word):
 	    """Search if the given word exists in the dictionary. If the word is not found, replace it with the first word

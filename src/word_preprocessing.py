@@ -34,7 +34,6 @@ class WordPreprocessor(object):
     ]
 
     def __init__(self, entities, aliases, split_by_sentence=False):
-        self.entities = entities
         self.aliases = aliases
         self.split_by_sentence = split_by_sentence
 
@@ -42,6 +41,12 @@ class WordPreprocessor(object):
 
         self.patterns = [(re.compile(regex), repl)
                          for (regex, repl) in self.REPLACEMENT_PATTERNS]
+
+        parameters, applications, systems = entities
+        self.parameters = [w.lower() for w in parameters]
+        applications = [w.lower() for w in applications]
+        systems = [w.lower() for w in systems]
+        self.domain_specific_words = set(['sparam', 'eud4s2k', 's2k', 'sles12'] + applications + systems)
 
     def split(self, data):
         # Convert 'nan' to "" (empty string)
@@ -57,7 +62,7 @@ class WordPreprocessor(object):
         
         self.split_data_words = [word_tokenize(text) for text in regex_filter_data]
 
-    def preprocess(self, data, use_stem=True):
+    def preprocess(self, data):
         # Split to sentences and apply regex filter 
         # Strip the numbers
         # Lowercase
@@ -65,16 +70,9 @@ class WordPreprocessor(object):
         # Remove all the punctuation
         # Replace spacecraft parameters with sparam
         # Remove words that contain numbers or/and punctuation
-        # Stem
         
         stop_words = set(stopwords.words('english'))
-        invalid_symbols = set(string.punctuation.replace("_", ""))
-        stemmer = PorterStemmer()
-        parameters, applications, systems = self.entities
-        parameters = [w.lower() for w in parameters]
-        applications = [w.lower() for w in applications]
-        systems = [w.lower() for w in systems]
-        domain_specific_words = set(['sparam', 'eud4s2k', 's2k', 'sles12'] + applications + systems)
+        invalid_symbols = set(string.punctuation.replace("_", ""))       
 
         self.split(data)
         preprocessed_data = []
@@ -84,18 +82,23 @@ class WordPreprocessor(object):
             filtered_words = (w.lower() for w in filtered_words)
             filtered_words = (w for w in filtered_words if not w in stop_words)
             filtered_words = (w for w in filtered_words if w not in string.punctuation)
-            filtered_words = ('sparam' if w in parameters else w for w in filtered_words)
-            filtered_words = (w for w in filtered_words if w in domain_specific_words or not any(c.isdigit() or c in invalid_symbols for c in w))
-            stemmed_words = (stemmer.stem(w) for w in filtered_words if not w in domain_specific_words)
-            if use_stem:
-                preprocessed_data.append(list(stemmed_words))
-            else:
-                preprocessed_data.append(list(filtered_words))
+            filtered_words = ('sparam' if w in self.parameters else w for w in filtered_words)
+            filtered_words = (w for w in filtered_words if w in self.domain_specific_words or not any(c.isdigit() or c in invalid_symbols for c in w))
+            preprocessed_data.append(list(filtered_words))
 
         # Remove empty lists
         preprocessed_data = [lst for lst in preprocessed_data if lst != []]
 
         return preprocessed_data
+
+    def apply_stem(self, text):
+        stemmer = PorterStemmer()
+        stemmed_data = []
+        for words in text:
+            stemmed_words = (stemmer.stem(w) for w in words if not w in self.domain_specific_words)
+            stemmed_data.append(list(stemmed_words))
+
+        return stemmed_data
 
     def replace_regex(self, string):
         new_string = string
