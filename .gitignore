@@ -1,4 +1,8 @@
 __pycache__/
 *.py[cod]
 /data
+/docs
 /tmp_specific_data_investigation
+/src/misc_notebooks/.ipynb_checkpoints
+/src/.ipynb_checkpoints
+/src/output
