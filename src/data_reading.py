@@ -86,7 +86,7 @@ class DataReader(object):
 
 	def read_test_blocks(self):
 		"""Read extracted descriptions from machine -high level- test blocks (CSV file) """
-		test_blocks_file_path = os.path.join(self.path, "parsed/test-blocks/machine_blocks.csv")
+		test_blocks_file_path = os.path.join(self.path, "parsed/test-blocks/machine_blocks_corrected.csv")
 		test_blocks_info = pd.read_csv(test_blocks_file_path)
 		test_blocks = test_blocks_info["description"].tolist()
 		print("Test blocks... Done.")
