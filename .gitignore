@@ -5,4 +5,5 @@ __pycache__/
 /tmp_specific_data_investigation
 /src/misc_notebooks/.ipynb_checkpoints
 /src/.ipynb_checkpoints
+/src/evaluation_data_processing
 /src/output
