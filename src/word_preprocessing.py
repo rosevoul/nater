@@ -24,7 +24,7 @@ class WordPreprocessor(object):
         (r'\n', ' '),
         (r'-', ''),
         (r'>', ' select '),
-        (r'=', ' = '),    
+        (r'=', ' = '),
         # Case specific
         (r'SCOS-2000', 's2k'),
         (r'scos-2000', 's2k'),
@@ -33,6 +33,7 @@ class WordPreprocessor(object):
         (r'milli seconds', 'milliseconds')
     ]
 
+    
     def __init__(self, entities, aliases, split_by_sentence=False):
         self.aliases = aliases
         self.split_by_sentence = split_by_sentence
@@ -46,7 +47,11 @@ class WordPreprocessor(object):
         self.parameters = [w.lower() for w in parameters]
         applications = [w.lower() for w in applications]
         systems = [w.lower() for w in systems]
-        self.domain_specific_words = set(['sparam', 'eud4s2k', 's2k', 'sles12'] + applications + systems)
+        self.domain_specific_words = set(
+            ['sparam', 'eud4s2k', 's2k', 'sles12'] + applications + systems)
+        self.stop_words = set(stopwords.words('english'))
+        self.punctuation = string.punctuation + '``' + "''"
+        self.invalid_symbols = set(string.punctuation.replace("_", ""))
 
     def split(self, data):
         # Convert 'nan' to "" (empty string)
@@ -59,31 +64,34 @@ class WordPreprocessor(object):
             split_data = split_data_sent
         # Apply regex filter
         regex_filter_data = [self.replace_regex(text) for text in split_data]
-        
-        self.split_data_words = [word_tokenize(text) for text in regex_filter_data]
+
+        self.split_data_words = [word_tokenize(
+            text) for text in regex_filter_data]
 
     def preprocess(self, data):
-        # Split to sentences and apply regex filter 
+        # Split to sentences and apply regex filter
         # Strip the numbers
+        # Strip newline characters
         # Lowercase
         # Remove stopwords
         # Remove all the punctuation
         # Replace spacecraft parameters with sparam
         # Remove words that contain numbers or/and punctuation
-        
-        stop_words = set(stopwords.words('english'))
-        invalid_symbols = set(string.punctuation.replace("_", ""))       
 
         self.split(data)
         preprocessed_data = []
         filtered_words = []
         for words in self.split_data_words:
             filtered_words = (w for w in words if not w.isnumeric())
+            filtered_words = (w.replace('\n', '').replace('\r', '') for w in words)
             filtered_words = (w.lower() for w in filtered_words)
-            filtered_words = (w for w in filtered_words if not w in stop_words)
-            filtered_words = (w for w in filtered_words if w not in string.punctuation)
-            filtered_words = ('sparam' if w in self.parameters else w for w in filtered_words)
-            filtered_words = (w for w in filtered_words if w in self.domain_specific_words or not any(c.isdigit() or c in invalid_symbols for c in w))
+            filtered_words = (w for w in filtered_words if not w in self.stop_words)
+            filtered_words = (
+                w for w in filtered_words if w not in self.punctuation)
+            filtered_words = (
+                'sparam' if w in self.parameters else w for w in filtered_words)
+            filtered_words = (w for w in filtered_words if w in self.domain_specific_words or not any(
+                c.isdigit() or c in self.invalid_symbols for c in w))
             preprocessed_data.append(list(filtered_words))
 
         # Remove empty lists
@@ -95,7 +103,8 @@ class WordPreprocessor(object):
         stemmer = PorterStemmer()
         stemmed_data = []
         for words in text:
-            stemmed_words = (stemmer.stem(w) for w in words if not w in self.domain_specific_words)
+            stemmed_words = (stemmer.stem(w)
+                             for w in words if not w in self.domain_specific_words)
             stemmed_data.append(list(stemmed_words))
 
         return stemmed_data
@@ -106,3 +115,91 @@ class WordPreprocessor(object):
             new_string = re.sub(pattern, repl, new_string)
 
         return new_string
+
+    def preprocess_names(self, data):
+        # Process the block names to descriptions
+        test_blocks = []
+        for block_name in data:
+            block_description = []
+            name_split = block_name.split('_') 
+            left = name_split[0]
+            block_description = self.split_uppercase(left)
+            if len(name_split) > 1:
+                right = name_split[1:]
+                block_description.extend(self.split_uppercase(''.join(right)))            
+            test_blocks.append(block_description)
+
+        return test_blocks
+
+
+    def nlp_filter(self, bag_of_words):
+        """ Applies nlp filter in a sentence represented by a bag of words
+        Input: a string, raw natural language sentence or a bag of words representing a sentence
+        Ouput: a filtered bag of words
+        """
+        
+        if type(bag_of_words) != list:
+            bag_of_words = word_tokenize(bag_of_words)
+        
+        filtered_words = (w.lower() for w in bag_of_words)
+        filtered_words = (w for w in filtered_words if not w in self.stop_words)
+        filtered_words = (w for w in filtered_words if not w in self.punctuation)
+        filtered_words = (w for w in filtered_words if w in self.domain_specific_words 
+                            or not any(c.isdigit() or c in self.invalid_symbols for c in w))
+
+        return list(filtered_words)
+
+    @staticmethod
+    def extract_parameters(sentence):
+        """
+        Input: a string, raw natural language sentence
+        Ouput: a tuple (keywords, params)
+                keywords: a bag of words that contains the keywords for the sentence
+                params: a bag of tuples (parameter, value) that contains the parameters
+                        and the corresponding values for the sentence
+        """
+        keywords = []
+        params_n_vals = []
+        
+        splits = sentence.split(':')
+        param_num = (len(splits) - 1)
+        keywords = word_tokenize(sentence)
+        keywords = [w.lower() for w in keywords]
+
+        if param_num > 0:
+            index = 0
+            for i in range(param_num):
+                param, val = splits[index].split()[-1], splits[index+1].split()[0]
+                index = index + 1
+                params_n_vals.append((param, val))
+                keywords.remove(param)
+                keywords.remove(val)
+        else:
+            params_n_vals = []
+
+        return keywords, params_n_vals
+    
+    @staticmethod
+    def preprocess_parameters(data):
+        # Extract the block parameters only (without values)
+        params_n_vals = (eval(block_params_n_vals) for block_params_n_vals in data) 
+        parameters = []
+        for block_params_n_vals in params_n_vals:
+            block_parameters = [param for (param, val) in block_params_n_vals]
+            parameters.append(block_params_n_vals)
+
+        return parameters
+
+    @staticmethod
+    def split_uppercase(s):
+        r = []
+        l = False
+        for c in s:
+            # l being: last character was not uppercase
+            if l and c.isupper():
+                r.append(' ')
+            l = not c.isupper()
+            r.append(c)
+        result = ''.join(r)
+        
+        return result.lower().split()        

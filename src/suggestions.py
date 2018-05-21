@@ -1,62 +1,187 @@
 import numpy as np
-from nltk import pos_tag
+from orangecontrib.associate.fpgrowth import *
 from sklearn.metrics.pairwise import cosine_similarity
+from gensim import corpora, models, similarities
+
 
 def similarity_vector(sent, model):
-	sent_vectors = np.empty((0,100), dtype="float32")
-	for word in sent:
-		word_vector = model.wv[word]
-		sent_vectors = np.append(sent_vectors, np.array([word_vector]), axis=0)
+    sent_vectors = np.empty((0, 300), dtype="float32")
+    for word in sent:
+        word_vector = model[word]
+        sent_vectors = np.append(sent_vectors, np.array([word_vector]), axis=0)
 
-	mean_vector = np.mean(sent_vectors, axis=0)
-	std_vector = np.std(sent_vectors, axis=0)
-	max_vector = np.max(sent_vectors, axis=0)
-	min_vector = np.min(sent_vectors, axis=0)
+    mean_vector = np.mean(sent_vectors, axis=0)
+    std_vector = np.std(sent_vectors, axis=0)
+    max_vector = np.max(sent_vectors, axis=0)
+    min_vector = np.min(sent_vectors, axis=0)
 
-	# Add the metrics' vectors to one vector; this is the similarity vector
-	similarity_vector = np.concatenate([mean_vector, std_vector, max_vector, min_vector])
+    # Add the metrics' vectors to one vector; this is the similarity vector
+    similarity_vector = np.concatenate(
+        [mean_vector, std_vector, max_vector, min_vector])
 
-	return similarity_vector
+    return similarity_vector
 
-def extract_pos(sent):
-	tagged_words = pos_tag(['We'] + sent)[1:]
-	# keep the primary verb and the primary noun
-	# TODO change this to spacy implementation
-	verbs = [word for (word, tag) in tagged_words if tag.startswith('VBP')]
-	nouns = [word for (word, tag) in tagged_words if tag.startswith('NNP')]
-	pos_tagged_sent = verbs
-	pos_tagged_sent.extend(nouns)
-	
-	return pos_tagged_sent 
 
-def most_similar_test_block(step, model, test_blocks, threshold=0.8, method="sent"):
-	similarities = []
+def average_similarities(model, query, sentences):
+    sims = []
+    for i, sent in enumerate(sentences):
+        sims.append((i, model.n_similarity(query, sent)))
 
-	for block in test_blocks:
-		if method=="pos":
-			block = extract_pos(block)
-			step = extract_pos(step)
-		step_vector = similarity_vector(step, model)
-		block_vector = similarity_vector(block, model) # TODO precalculate the similarity vectors of the blocks
-		# calculate the similarity and save in array
-		similarities.append(cosine_similarity([step_vector], [block_vector])[0][0])
+    return sims
 
-	# Return the block description that is matching the highest similarity
-	top_similarity = max(similarities)
-	if top_similarity < threshold:
-		return "None_similar"
 
-	# Get index of top similarity
-	most_similar_block = test_blocks[np.argmax(similarities)]
+def statistics_similarities(model, query, sentences):
+    sims = []
+    query_vector = similarity_vector(query, model)
+    for i, sent in enumerate(sentences):
+        sent_vector = similarity_vector(sent, model)
+        statistics_similarity = cosine_similarity(
+            [query_vector], [sent_vector])[0][0]
+        sims.append((i, statistics_similarity))
 
-	return most_similar_block
+    return sims
 
-def find_associated_block(previous_block, associated_blocks):
 
-	for i, block_set in enumerate(associated_blocks):
-		for j, block in enumerate(block_set):
-			if associated_blocks[i][j] == previous_block:
-				associated_block = associated_blocks[i+1]
-				return associated_block
+def tfidf_similarities(query, sentences):
+    dictionary = corpora.Dictionary(sentences)
+    query_vec = dictionary.doc2bow(query)
+    sent_vectors = [dictionary.doc2bow(sent) for sent in sentences]
+    tfidf = models.TfidfModel(sent_vectors)
+    index = similarities.SparseMatrixSimilarity(
+        tfidf[sent_vectors], num_features=len(dictionary.token2id))
+    sims = index[tfidf[query_vec]]
 
-	return "None_associated"
+    return list(enumerate(sims))
+
+
+def lsi_similarities(query, sentences):
+    dictionary = corpora.Dictionary(sentences)
+    query_vec = dictionary.doc2bow(query)
+    sent_vectors = [dictionary.doc2bow(sent) for sent in sentences]
+    # initialize an LSI transformation
+    lsi = models.LsiModel(sent_vectors, id2word=dictionary, num_topics=2)
+
+    # transform corpus to LSI space and index it
+    index = similarities.MatrixSimilarity(lsi[sent_vectors])
+    sims = index[lsi[query_vec]]
+
+    return enumerate(sims)
+
+
+def jaccard_similarities(query, sentences):
+    sims = []
+    for i, sent in enumerate(sentences):
+        intersection = set(query).intersection(set(sent))
+        union = set(query).union(set(sent))
+        jaccard_similarity = len(intersection) / len(union)
+        sims.append((i, jaccard_similarity))
+
+    return sims
+
+
+def parameter_similarities(dplist, plists):
+    """Calculate similaries based on parameters
+
+    dplist: list of parameters extracted from description
+    plists: lists of parameters; each list corresponds to each test block
+
+    :return: list of similarities
+    :rtype: list of floats in the range [0, 1]
+    """
+    sims = []
+    for i, plist in enumerate(plists):
+        if dplist == [] and plist == []:
+            score = 1
+        elif dplist == [] and plist != []:
+            score = 0.0
+        elif dplist != [] and plist == []:
+            score = 0.0
+        else:
+            ptuples = []
+            for paramA in plist:
+                for paramB in dplist:
+                    if paramA == paramB:
+                        pscore = 1
+                    else:
+                        pscore = 0
+                    ptuples.append((paramA, paramB, pscore))
+            pscore_sum = 0
+            for ptuple in ptuples:
+                if ptuple[2]:
+                    pscore_sum += 1
+
+            score = pscore_sum / len(dplist)
+        sims.append((i, score))
+
+    return sims
+
+
+def score_associated_blocks(old_tests, previous_blocks, test_blocks_indices, min_confidence=0.3):
+    min_occurences = 2
+    itemsets = dict(frequent_itemsets(old_tests, min_occurences))
+
+    confidence_scores = []
+    for block in test_blocks_indices:
+        rule_set_list = previous_blocks[:]
+        rule_set_list.append(block)
+        rule_set = frozenset({block for block in rule_set_list})
+
+        # Create rules and calculate confidence
+        if rule_set not in itemsets:
+            confidence_scores.append(0.0)
+        else:
+            result = list(association_rules(
+                itemsets, min_confidence, frozenset(rule_set)))
+            if result:
+                for itemset in result:
+                    if itemset[1] == frozenset({block}):
+                        confidence_scores.append(itemset[-1])
+                    else:
+                        confidence_scores.append(0.0)
+            else:
+                confidence_scores.append(0.0)
+
+    return confidence_scores
+
+
+def assign_scores(N, k_sims, k_weight, p_sims, p_weight, threshold=0.0):
+    blocks_number = len(k_sims)
+    scores = []
+    top_N_scores_indices = []
+
+    for i in range(blocks_number):
+        score = (k_sims[i][1] * k_weight + p_sims[i][1] * p_weight) / 2
+        scores.append((i, score))
+
+    sorted_scores = sorted(scores, key=lambda item: item[1], reverse=True)
+    for i in range(N):
+        if sorted_scores[i][1] >= threshold:
+            top_N_scores_indices.append(sorted_scores[i][0])
+
+    return top_N_scores_indices
+
+
+def most_similar_text(step, test_blocks, model, threshold=0.0, method="avg"):
+    sims = []
+    top_5_similarity_indices = []
+    if method == "avg" and model:
+        sims = average_similarities(model, step, test_blocks)
+    elif method == "sta" and model:
+        sims = statistics_similarities(model, step, test_blocks)
+    elif method == "tf-idf":
+        sims = tfidf_similarities(step, test_blocks)
+    elif method == "jac":
+        sims = jaccard_similarities(step, test_blocks)
+    elif method == "lsi":
+        sims = lsi_similarities(step, test_blocks)
+    # Return the index of the block description that is matching the highest
+    # similarity
+    top_similarity_index = max(sims, key=lambda item: item[1])[0]
+    most_similar_block = test_blocks[top_similarity_index]
+
+    sorted_sims = sorted(sims, key=lambda item: item[1], reverse=True)
+    for i in range(5):
+        if sorted_sims[i][1] >= threshold:
+            top_5_similarity_indices.append(sorted_sims[i][0])
+
+    return top_5_similarity_indices
