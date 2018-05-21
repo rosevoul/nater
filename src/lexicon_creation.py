@@ -19,4 +19,4 @@ class LexiconCreator(object):
 	def write_to_file(file_path, words):
 	    with open (file_path, "w") as f:
 	        for w in words:
-	            f.write("%s\n" % w)    
+	        	f.write('{0}\n'.format(w))

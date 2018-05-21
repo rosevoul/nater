@@ -48,7 +48,7 @@ class WordPreprocessor(object):
         applications = [w.lower() for w in applications]
         systems = [w.lower() for w in systems]
         self.domain_specific_words = set(
-            ['sparam', 'eud4s2k', 's2k', 'sles12'] + applications + systems)
+            ['sparam', 'eud4s2k', 's2k', 'sles12', 'misccontext.sta'] + applications + systems)
         self.stop_words = set(stopwords.words('english'))
         self.punctuation = string.punctuation + '``' + "''"
         self.invalid_symbols = set(string.punctuation.replace("_", ""))
@@ -68,7 +68,7 @@ class WordPreprocessor(object):
         self.split_data_words = [word_tokenize(
             text) for text in regex_filter_data]
 
-    def preprocess(self, data):
+    def model_preprocess(self, data):
         # Split to sentences and apply regex filter
         # Strip the numbers
         # Strip newline characters
@@ -82,17 +82,19 @@ class WordPreprocessor(object):
         preprocessed_data = []
         filtered_words = []
         for words in self.split_data_words:
-            filtered_words = (w for w in words if not w.isnumeric())
-            filtered_words = (w.replace('\n', '').replace('\r', '') for w in words)
-            filtered_words = (w.lower() for w in filtered_words)
-            filtered_words = (w for w in filtered_words if not w in self.stop_words)
-            filtered_words = (
-                w for w in filtered_words if w not in self.punctuation)
-            filtered_words = (
-                'sparam' if w in self.parameters else w for w in filtered_words)
-            filtered_words = (w for w in filtered_words if w in self.domain_specific_words or not any(
-                c.isdigit() or c in self.invalid_symbols for c in w))
-            preprocessed_data.append(list(filtered_words))
+            # filtered_words = (w for w in words if not w.isnumeric())
+            # filtered_words = (w.replace('\n', '').replace('\r', '') for w in words)
+            # filtered_words = (w.lower() for w in filtered_words)
+            # filtered_words = (w for w in filtered_words if not w in self.stop_words)
+            # filtered_words = (
+            #     w for w in filtered_words if w not in self.punctuation)
+            # filtered_words = (
+            #     'sparam' if w in self.parameters else w for w in filtered_words)
+            # filtered_words = (w for w in filtered_words if w in self.domain_specific_words or not any(
+            #     c.isdigit() or c in self.invalid_symbols for c in w))
+            # preprocessed_data.append(list(filtered_words))
+
+            preprocessed_data.append(self.nlp_filter(words))
 
         # Remove empty lists
         preprocessed_data = [lst for lst in preprocessed_data if lst != []]
@@ -161,17 +163,16 @@ class WordPreprocessor(object):
         keywords = []
         params_n_vals = []
         
-        splits = sentence.split(':')
+        splits = sentence.split('=')
         param_num = (len(splits) - 1)
-        keywords = word_tokenize(sentence)
-        keywords = [w.lower() for w in keywords]
-
+        keywords = word_tokenize(sentence.replace('=', ' '))
+        
         if param_num > 0:
             index = 0
             for i in range(param_num):
                 param, val = splits[index].split()[-1], splits[index+1].split()[0]
                 index = index + 1
-                params_n_vals.append((param, val))
+                params_n_vals.append((param.lower(), val))
                 keywords.remove(param)
                 keywords.remove(val)
         else:
@@ -185,8 +186,8 @@ class WordPreprocessor(object):
         params_n_vals = (eval(block_params_n_vals) for block_params_n_vals in data) 
         parameters = []
         for block_params_n_vals in params_n_vals:
-            block_parameters = [param for (param, val) in block_params_n_vals]
-            parameters.append(block_params_n_vals)
+            block_parameters = [param.lower() for (param, val) in block_params_n_vals]
+            parameters.append(block_parameters)
 
         return parameters
 
@@ -198,7 +199,7 @@ class WordPreprocessor(object):
             # l being: last character was not uppercase
             if l and c.isupper():
                 r.append(' ')
-            l = not c.isupper()
+            l = not c.isupper() and not c.isdigit()
             r.append(c)
         result = ''.join(r)
         
