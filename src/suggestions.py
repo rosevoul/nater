@@ -25,6 +25,10 @@ def similarity_vector(sent, model):
 def average_similarities(model, query, sentences):
     sims = []
     for i, sent in enumerate(sentences):
+        sent = [w for w in sent if w in model.wv.vocab]
+        not_in_vocab = [w for w in sent if w not in model.wv.vocab]
+        if not_in_vocab != []:
+            print("Not in vocab: ", not_in_vocab)
         sims.append((i, model.n_similarity(query, sent)))
 
     return sims
