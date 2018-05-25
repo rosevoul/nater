@@ -1,6 +1,6 @@
 import re
 import string
-from nltk import word_tokenize, sent_tokenize
+from nltk import word_tokenize, sent_tokenize, pos_tag
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
@@ -50,6 +50,7 @@ class WordPreprocessor(object):
         self.domain_specific_words = set(
             ['sparam', 'eud4s2k', 's2k', 'sles12', 'misccontext.sta'] + applications + systems)
         self.stop_words = set(stopwords.words('english'))
+        self.stop_words.remove('all')
         self.punctuation = string.punctuation + '``' + "''"
         self.invalid_symbols = set(string.punctuation.replace("_", ""))
 
@@ -97,7 +98,7 @@ class WordPreprocessor(object):
             preprocessed_data.append(self.nlp_filter(words))
 
         # Remove empty lists
-        preprocessed_data = [lst for lst in preprocessed_data if lst != []]
+        preprocessed_data = [lst for lst in preprocessed_data if lst]
 
         return preprocessed_data
 
@@ -151,6 +152,33 @@ class WordPreprocessor(object):
 
         return list(filtered_words)
 
+    def split_compound_sentence(self, data):
+        """ Split one 'and' or ',' compound sentence to more sentences
+        Input: a string, raw natural language sentence
+        Output: a list of strings, each string is representing a sentence 
+        """
+        sentences = []
+        data = data.replace(' and ', ' , ')
+        sents = data.split(',')
+        if len(sents) != 1:
+            sent_verb = [] * len(sents)
+            for i, sent in enumerate(sents):
+                if i == 0:
+                    pos = pos_tag(word_tokenize('I ' + sent))
+                else: 
+                    pos = pos_tag(word_tokenize(sent))
+                verbs = [w[0] for w in pos if w[1].startswith('V') and w[1] != 'VBG']
+                if verbs:
+                    previous_verb = verbs
+                    sent_verb.append(verbs)
+                else:
+                    sent_verb.append(previous_verb)
+                    sent = previous_verb[-1] + sent
+                sentences.append(sent)
+            return sentences
+        else:
+            return [data]
+
     @staticmethod
     def extract_parameters(sentence):
         """
@@ -170,7 +198,7 @@ class WordPreprocessor(object):
         if param_num > 0:
             index = 0
             for i in range(param_num):
-                param, val = splits[index].split()[-1], splits[index+1].split()[0]
+                param, val = splits[index].split()[-1], splits[index+1].split()[0].rstrip('.')
                 index = index + 1
                 params_n_vals.append((param.lower(), val))
                 keywords.remove(param)

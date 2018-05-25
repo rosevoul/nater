@@ -25,11 +25,16 @@ def similarity_vector(sent, model):
 def average_similarities(model, query, sentences):
     sims = []
     for i, sent in enumerate(sentences):
-        sent = [w for w in sent if w in model.wv.vocab]
-        not_in_vocab = [w for w in sent if w not in model.wv.vocab]
-        if not_in_vocab != []:
-            print("Not in vocab: ", not_in_vocab)
-        sims.append((i, model.n_similarity(query, sent)))
+        if sent and query:
+            sent = [w for w in sent if w in model.wv.vocab]
+            not_in_vocab = [w for w in sent if w not in model.wv.vocab]
+            if not_in_vocab:
+                print("Not in vocab: ", not_in_vocab)
+            sims.append((i, model.n_similarity(query, sent)))
+        elif not sent and not query:
+            sims.append((i, 1.0))
+        else:
+            sims.append((i, 0.0))
 
     return sims
 
@@ -94,11 +99,11 @@ def parameter_similarities(dplist, plists):
     """
     sims = []
     for i, plist in enumerate(plists):
-        if dplist == [] and plist == []:
+        if not dplist and not plist:
             score = 1
-        elif dplist == [] and plist != []:
+        elif not dplist and plist:
             score = 0.0
-        elif dplist != [] and plist == []:
+        elif dplist and not plist:
             score = 0.0
         else:
             ptuples = []
@@ -148,13 +153,13 @@ def score_associated_blocks(old_tests, previous_blocks, test_blocks_indices, min
     return confidence_scores
 
 
-def assign_scores(N, k_sims, k_weight, p_sims, p_weight, threshold=0.0):
+def assign_scores(N, k_sims, k_weight, p_sims, p_weight, pocer_sims, pocer_weight, threshold=0.0):
     blocks_number = len(k_sims)
     scores = []
     top_N_scores_indices = []
 
     for i in range(blocks_number):
-        score = (k_sims[i][1] * k_weight + p_sims[i][1] * p_weight) / 2
+        score = (k_sims[i][1] * k_weight + p_sims[i][1] * p_weight + pocer_sims[i][1] * pocer_weight) / 3
         scores.append((i, score))
 
     sorted_scores = sorted(scores, key=lambda item: item[1], reverse=True)
@@ -162,7 +167,7 @@ def assign_scores(N, k_sims, k_weight, p_sims, p_weight, threshold=0.0):
         if sorted_scores[i][1] >= threshold:
             top_N_scores_indices.append(sorted_scores[i][0])
 
-    return top_N_scores_indices
+    return top_N_scores_indices, sorted_scores
 
 
 def most_similar_text(step, test_blocks, model, threshold=0.0, method="avg"):
