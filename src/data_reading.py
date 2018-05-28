@@ -11,6 +11,8 @@ class DataReader(object):
         self.path = path
         self.test_blocks_names, self.test_blocks_descriptions,  self.test_blocks_preconditions, \
                                 self.test_blocks_postconditions, self.test_blocks_parameters = self.read_test_blocks()
+        self.requirements_ids, self.requirements_names, self.requirements_descriptions, \
+                                self.requirements_cover_statuses = self.read_requirements()
         self.entities = self.read_entities()
         self.aliases = self.read_aliases()
 
@@ -29,6 +31,20 @@ class DataReader(object):
 
         return (test_blocks_names, test_blocks_descriptions, test_blocks_preconditions,
                 test_blocks_postconditions, test_blocks_parameters)
+
+    def read_requirements(self):
+        """Read requirements from various systems and applications (CSV file) """
+        requirements_file_path = os.path.join(
+            self.path, "parsed/requirements.csv")
+        requirements_info = pd.read_csv(requirements_file_path)
+        requirements_info = requirements_info.fillna('')
+        requirements_ids = requirements_info["req_id"].tolist()
+        requirements_names = requirements_info["name"].tolist()
+        requirements_descriptions = requirements_info["description"].tolist()
+        requirements_cover_statuses = requirements_info["cover_status"].tolist()
+     
+        print("Requirements... Done.")
+        return (requirements_ids, requirements_names, requirements_descriptions, requirements_cover_statuses)
 
     def read_entities(self):
         entities_path = os.path.join(self.path, "parsed/entities.csv")

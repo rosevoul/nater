@@ -24,6 +24,10 @@ def similarity_vector(sent, model):
 
 def average_similarities(model, query, sentences):
     sims = []
+    query = [w for w in query if w in model.wv.vocab]
+    query_unknown_words = [w for w in query if w not in model.wv.vocab]
+    if query_unknown_words:
+                print("QUERY: Not in model vocab: ", query_unknown_words)
     for i, sent in enumerate(sentences):
         if sent and query:
             sent = [w for w in sent if w in model.wv.vocab]
@@ -170,27 +174,27 @@ def assign_scores(N, k_sims, k_weight, p_sims, p_weight, pocer_sims, pocer_weigh
     return top_N_scores_indices, sorted_scores
 
 
-def most_similar_text(step, test_blocks, model, threshold=0.0, method="avg"):
+def most_similar_text(N, query, corpora, model, threshold=0.0, method="avg"):
     sims = []
-    top_5_similarity_indices = []
+    top_N_similarity_indices = []
     if method == "avg" and model:
-        sims = average_similarities(model, step, test_blocks)
+        sims = average_similarities(model, query, corpora)
     elif method == "sta" and model:
-        sims = statistics_similarities(model, step, test_blocks)
+        sims = statistics_similarities(model, query, corpora)
     elif method == "tf-idf":
-        sims = tfidf_similarities(step, test_blocks)
+        sims = tfidf_similarities(query, corpora)
     elif method == "jac":
-        sims = jaccard_similarities(step, test_blocks)
+        sims = jaccard_similarities(query, corpora)
     elif method == "lsi":
-        sims = lsi_similarities(step, test_blocks)
+        sims = lsi_similarities(query, corpora)
     # Return the index of the block description that is matching the highest
     # similarity
     top_similarity_index = max(sims, key=lambda item: item[1])[0]
-    most_similar_block = test_blocks[top_similarity_index]
+    most_similar_block = corpora[top_similarity_index]
 
     sorted_sims = sorted(sims, key=lambda item: item[1], reverse=True)
-    for i in range(5):
+    for i in range(N):
         if sorted_sims[i][1] >= threshold:
-            top_5_similarity_indices.append(sorted_sims[i][0])
+            top_N_similarity_indices.append(sorted_sims[i][0])
 
-    return top_5_similarity_indices
+    return top_N_similarity_indices, sorted_sims

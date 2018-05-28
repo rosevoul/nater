@@ -119,20 +119,20 @@ class WordPreprocessor(object):
 
         return new_string
 
-    def preprocess_names(self, data):
-        # Process the block names to descriptions
-        test_blocks = []
-        for block_name in data:
-            block_description = []
-            name_split = block_name.split('_') 
+    def preprocess_variable_names(self, data):
+        # Process variable-like names(containing uppercase and camel case) to keywords        
+        names = []
+        for variable_name in data:
+            name_keywords = []
+            name_split = variable_name.split('_') 
             left = name_split[0]
-            block_description = self.split_uppercase(left)
+            name_keywords = self.split_uppercase(left)
             if len(name_split) > 1:
                 right = name_split[1:]
-                block_description.extend(self.split_uppercase(''.join(right)))            
-            test_blocks.append(block_description)
-
-        return test_blocks
+                name_keywords.extend(self.split_uppercase(''.join(right)))            
+            names.append(name_keywords)
+        
+        return names
 
 
     def nlp_filter(self, bag_of_words):
@@ -149,6 +149,12 @@ class WordPreprocessor(object):
         filtered_words = (w for w in filtered_words if not w in self.punctuation)
         filtered_words = (w for w in filtered_words if w in self.domain_specific_words 
                             or not any(c.isdigit() or c in self.invalid_symbols for c in w))
+
+        return list(filtered_words)
+
+    def remove_test_words(self, bag_of_words):
+        test_word_parts = ['test', 'verif']
+        filtered_words = (w for w in bag_of_words if not any(word_part in w for word_part in test_word_parts))
 
         return list(filtered_words)
 
