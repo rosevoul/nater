@@ -4,8 +4,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 from gensim import corpora, models, similarities
 
 
+
 def similarity_vector(sent, model):
-    sent_vectors = np.empty((0, 300), dtype="float32")
+    sent_vectors = np.empty((0, 100), dtype="float32")
     for word in sent:
         word_vector = model[word]
         sent_vectors = np.append(sent_vectors, np.array([word_vector]), axis=0)
@@ -45,12 +46,26 @@ def average_similarities(model, query, sentences):
 
 def statistics_similarities(model, query, sentences):
     sims = []
+    query = [w for w in query if w in model.wv.vocab]
+    query_unknown_words = [w for w in query if w not in model.wv.vocab]
+    if query_unknown_words:
+                print("QUERY: Not in model vocab: ", query_unknown_words)
     query_vector = similarity_vector(query, model)
+
     for i, sent in enumerate(sentences):
-        sent_vector = similarity_vector(sent, model)
-        statistics_similarity = cosine_similarity(
-            [query_vector], [sent_vector])[0][0]
-        sims.append((i, statistics_similarity))
+        if sent and query:
+            sent = [w for w in sent if w in model.wv.vocab]
+            not_in_vocab = [w for w in sent if w not in model.wv.vocab]
+            if not_in_vocab:
+                print("Not in vocab: ", not_in_vocab)
+            sent_vector = similarity_vector(sent, model)
+            statistics_similarity = cosine_similarity(
+                [query_vector], [sent_vector])[0][0]
+            sims.append((i, statistics_similarity))
+        elif not sent and not query:
+            sims.append((i, 1.0))
+        else:
+            sims.append((i, 0.0))
 
     return sims
 
@@ -78,7 +93,7 @@ def lsi_similarities(query, sentences):
     index = similarities.MatrixSimilarity(lsi[sent_vectors])
     sims = index[lsi[query_vec]]
 
-    return enumerate(sims)
+    return list(enumerate(sims))
 
 
 def jaccard_similarities(query, sentences):
@@ -174,7 +189,7 @@ def assign_scores(N, k_sims, k_weight, p_sims, p_weight, pocer_sims, pocer_weigh
     return top_N_scores_indices, sorted_scores
 
 
-def most_similar_text(N, query, corpora, model, threshold=0.0, method="avg"):
+def most_similar_text(query, corpora, model, N, method, threshold=0.0):
     sims = []
     top_N_similarity_indices = []
     if method == "avg" and model:

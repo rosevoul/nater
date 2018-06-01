@@ -11,8 +11,8 @@ class DataReader(object):
         self.path = path
         self.test_blocks_names, self.test_blocks_descriptions,  self.test_blocks_preconditions, \
                                 self.test_blocks_postconditions, self.test_blocks_parameters = self.read_test_blocks()
-        self.requirements_ids, self.requirements_names, self.requirements_descriptions, \
-                                self.requirements_cover_statuses = self.read_requirements()
+        self.reqs_ids, self.reqs_names, self.reqs_descriptions, \
+                                self.reqs_cover_statuses = self.read_requirements()
         self.entities = self.read_entities()
         self.aliases = self.read_aliases()
 
@@ -34,17 +34,17 @@ class DataReader(object):
 
     def read_requirements(self):
         """Read requirements from various systems and applications (CSV file) """
-        requirements_file_path = os.path.join(
+        reqs_file_path = os.path.join(
             self.path, "parsed/requirements.csv")
-        requirements_info = pd.read_csv(requirements_file_path)
-        requirements_info = requirements_info.fillna('')
-        requirements_ids = requirements_info["req_id"].tolist()
-        requirements_names = requirements_info["name"].tolist()
-        requirements_descriptions = requirements_info["description"].tolist()
-        requirements_cover_statuses = requirements_info["cover_status"].tolist()
+        reqs_info = pd.read_csv(reqs_file_path)
+        reqs_info = reqs_info.fillna('')
+        reqs_ids = reqs_info["req_id"].tolist()
+        reqs_names = reqs_info["name"].tolist()
+        reqs_descriptions = reqs_info["description"].tolist()
+        reqs_cover_statuses = reqs_info["cover_status"].tolist()
      
         print("Requirements... Done.")
-        return (requirements_ids, requirements_names, requirements_descriptions, requirements_cover_statuses)
+        return (reqs_ids, reqs_names, reqs_descriptions, reqs_cover_statuses)
 
     def read_entities(self):
         entities_path = os.path.join(self.path, "parsed/entities.csv")
@@ -80,7 +80,7 @@ class ModelDataReader(DataReader):
             self.path, "implemented-test-scenarios/TESTS.xlsx")
         test_scenarios_dir_path = os.path.join(
             self.path, "test-scenarios-reqs-coverage")
-        requirements_dir_path = os.path.join(self.path, "reqs")
+        reqs_dir_path = os.path.join(self.path, "reqs")
         documentation_dir_path = os.path.join(self.path, "documentation")
 
         # Read data from Implemented test scenarios
@@ -123,11 +123,11 @@ class ModelDataReader(DataReader):
         print("Test scenarios files... Done.")
 
         # Read data from Requirements (Excel files)
-        requirements_info = []
-        requirements_files = self.get_files(requirements_dir_path, ".xlsx")
+        reqs_info = []
+        reqs_files = self.get_files(reqs_dir_path, ".xlsx")
 
-        for file in requirements_files:
-            requirements_info.extend(
+        for file in reqs_files:
+            reqs_info.extend(
                 self.read_excel(file, "Sheet1", "Description"))
 
         print("Requirements files... Done.")
@@ -145,7 +145,7 @@ class ModelDataReader(DataReader):
         docs = []
         docs.extend(implemented_test_scenarios_info)
         docs.extend(test_scenarios_info)
-        docs.extend(requirements_info)
+        docs.extend(reqs_info)
         docs.extend(documentation_info)
 
         return docs
