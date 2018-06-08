@@ -172,13 +172,13 @@ def score_associated_blocks(old_tests, previous_blocks, test_blocks_indices, min
     return confidence_scores
 
 
-def assign_scores(N, k_sims, k_weight, p_sims, p_weight, pocer_sims, pocer_weight, threshold=0.0):
+def assign_scores(N, k_sims, k_weight, p_sims, p_weight, threshold=0.0):
     blocks_number = len(k_sims)
     scores = []
     top_N_scores_indices = []
 
     for i in range(blocks_number):
-        score = (k_sims[i][1] * k_weight + p_sims[i][1] * p_weight + pocer_sims[i][1] * pocer_weight) / 3
+        score = (k_sims[i][1] * k_weight + p_sims[i][1] * p_weight) / 2
         scores.append((i, score))
 
     sorted_scores = sorted(scores, key=lambda item: item[1], reverse=True)
@@ -189,9 +189,8 @@ def assign_scores(N, k_sims, k_weight, p_sims, p_weight, pocer_sims, pocer_weigh
     return top_N_scores_indices, sorted_scores
 
 
-def most_similar_text(query, corpora, model, N, method, threshold=0.0):
+def compute_similarities(query, corpora, method, model=None):
     sims = []
-    top_N_similarity_indices = []
     if method == "avg" and model:
         sims = average_similarities(model, query, corpora)
     elif method == "sta" and model:
@@ -202,6 +201,13 @@ def most_similar_text(query, corpora, model, N, method, threshold=0.0):
         sims = jaccard_similarities(query, corpora)
     elif method == "lsi":
         sims = lsi_similarities(query, corpora)
+
+    return sims
+
+
+def most_similar_text(query, corpora, model, N, method, threshold=0.0):
+    sims = compute_similarities(query, corpora, method, model)
+    top_N_similarity_indices = []
     # Return the index of the block description that is matching the highest
     # similarity
     top_similarity_index = max(sims, key=lambda item: item[1])[0]
