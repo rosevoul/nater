@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1017</width>
+    <height>743</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Test Scenario Automation</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="testStepsBlocksTab">
+       <attribute name="title">
+        <string>Test Blocks</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_9">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,1">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
+          <item>
+           <layout class="QGridLayout" name="gridLayout">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetMinAndMaxSize</enum>
+            </property>
+            <item row="1" column="1">
+             <widget class="QPlainTextEdit" name="plainTextEdit">
+              <property name="plainText">
+               <string>Start the application SPACON Desktop and select the Constants panel.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Step Description:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>Expected Result:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QPushButton" name="pushButton_3">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Find Test Blocks</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QPlainTextEdit" name="plainTextEdit_2">
+              <property name="plainText">
+               <string>-</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Test Step Editor</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="relevantTestBlocksVerticalLayout">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetMinimumSize</enum>
+            </property>
+            <item>
+             <widget class="QLabel" name="label_3">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Relevant Test Blocks (please select 2)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listWidget">
+              <property name="selectionMode">
+               <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+              <item>
+               <property name="text">
+                <string>SpaconDesktop_openApplication</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>SpaconDesktop_revertOnlineDbChanges</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>SpaconDesktop_closeApplication</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>BND_clickButton_SpaconDesktop_RealTimeUDC_Apply</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>SpaconDesktop_openView_TcStatus</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>SpaconDesktop_tearDown</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>MonitoringDesktop_closeApplication</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>SpaconDesktop_openView_RealTimeUDC</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>MonitoringDesktop_openApplication</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>BND_clickButton_SpaconDesktop_TCReleasePTVCEV_ReleaseConfiguration_Reset</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Show more...</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_4">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>OK</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Test Scenario</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QTableWidget" name="tableWidget_2">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="dragEnabled">
+               <bool>false</bool>
+              </property>
+              <attribute name="horizontalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="horizontalHeaderCascadingSectionResizes">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>100</number>
+              </attribute>
+              <attribute name="horizontalHeaderHighlightSections">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="horizontalHeaderMinimumSectionSize">
+               <number>68</number>
+              </attribute>
+              <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="horizontalHeaderStretchLastSection">
+               <bool>false</bool>
+              </attribute>
+              <row>
+               <property name="text">
+                <string>1</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>2</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>3</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>4</string>
+               </property>
+              </row>
+              <column>
+               <property name="text">
+                <string>Step Description</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Expected Result</string>
+               </property>
+              </column>
+              <item row="0" column="0">
+               <property name="text">
+                <string>Start S2K.</string>
+               </property>
+              </item>
+              <item row="0" column="1">
+               <property name="text">
+                <string>-</string>
+               </property>
+              </item>
+              <item row="1" column="0">
+               <property name="text">
+                <string>Login to the Monitoring Desktop as superuser.</string>
+               </property>
+              </item>
+              <item row="1" column="1">
+               <property name="text">
+                <string>-</string>
+               </property>
+              </item>
+              <item row="2" column="0">
+               <property name="text">
+                <string>Setup the Prime Services for Telecommanding.</string>
+               </property>
+              </item>
+              <item row="2" column="1">
+               <property name="text">
+                <string>-</string>
+               </property>
+              </item>
+              <item row="3" column="0">
+               <property name="text">
+                <string>Start a Manual Stack and disable dynamic PTV checks.</string>
+               </property>
+              </item>
+              <item row="3" column="1">
+               <property name="text">
+                <string>-</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_2">
+              <property name="text">
+               <string>Complete Test Scenario</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="testInfoReqsTab">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <attribute name="title">
+        <string>Requirements</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <widget class="QLabel" name="label_8">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Test Scenario Information</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QFormLayout" name="formLayout_2">
+              <property name="fieldGrowthPolicy">
+               <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="testIDLabel_2">
+                <property name="text">
+                 <string>ID</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="testIDLineEdit_2">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>1210</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="testDescriptionLabel_2">
+                <property name="text">
+                 <string>Title</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLineEdit" name="testTitleLineEdit_2">
+                <property name="text">
+                 <string>CNFD_014</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="0">
+               <widget class="QLabel" name="testTitleLabel_2">
+                <property name="text">
+                 <string>Description</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QPlainTextEdit" name="testDescriptionTextEdit_2">
+                <property name="plainText">
+                 <string>Verify functionality of commands encoding.</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QPushButton" name="pushButton">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Maximum" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Trace Requirements</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_7">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Recommended Requirements</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QListWidget" name="listWidget_4">
+            <property name="selectionMode">
+             <enum>QAbstractItemView::MultiSelection</enum>
+            </property>
+            <item>
+             <property name="text">
+              <string>It shall be possible to display and edit the value of constant parameters from within the SPACON Desktop application.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>The TC History Display shall support a brief and a full mode display of the command data. </string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>The SPACON Desktop application shall support the display and setting of a global maximum future time period used in future time checks.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>The Manual Stack shall offer CQD (command query display) like feature.</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>When in ‘live’ mode, the TC History Display shall be updated in real-time to show the commands which have been released after opening the application as well as any update to any verification status.</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QLabel" name="label_9">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Linked Requirements</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTableWidget" name="tableWidget_3">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <row>
+             <property name="text">
+              <string>1</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>2</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>3</string>
+             </property>
+            </row>
+            <column>
+             <property name="text">
+              <string>Req ID</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Req Description</string>
+             </property>
+            </column>
+            <item row="0" column="0">
+             <property name="text">
+              <string>14481</string>
+             </property>
+            </item>
+            <item row="0" column="1">
+             <property name="text">
+              <string>It shall be possible to display and edit the value of constant parameters from within the SPACON Desktop application.
+</string>
+             </property>
+            </item>
+            <item row="1" column="0">
+             <property name="text">
+              <string>911</string>
+             </property>
+            </item>
+            <item row="1" column="1">
+             <property name="text">
+              <string>The TC history display shall support a brief and a full mode display of the command data. </string>
+             </property>
+            </item>
+            <item row="2" column="0">
+             <property name="text">
+              <string>1150</string>
+             </property>
+            </item>
+            <item row="2" column="1">
+             <property name="text">
+              <string>The Manual Stack shall offer CQD (command query display) like feature.</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1017</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuTest_Steps">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+   </widget>
+   <addaction name="menuTest_Steps"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <action name="actionSave">
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
