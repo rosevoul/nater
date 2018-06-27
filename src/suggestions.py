@@ -4,7 +4,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from gensim import corpora, models, similarities
 
 
-
 def similarity_vector(sent, model):
     sent_vectors = np.empty((0, 100), dtype="float32")
     for word in sent:
@@ -87,13 +86,13 @@ def lsi_similarities(query, sentences):
     query_vec = dictionary.doc2bow(query)
     sent_vectors = [dictionary.doc2bow(sent) for sent in sentences]
     # initialize an LSI transformation
-    lsi = models.LsiModel(sent_vectors, id2word=dictionary, num_topics=2)
+    lsi = models.LsiModel(sent_vectors, id2word=dictionary, num_topics=100)
 
     # transform corpus to LSI space and index it
     index = similarities.MatrixSimilarity(lsi[sent_vectors])
     sims = index[lsi[query_vec]]
-
-    return list(enumerate(sims))
+    
+    return [(i, (s + 1)/2) for (i, s) in list(enumerate(sims))]
 
 
 def jaccard_similarities(query, sentences):
@@ -203,6 +202,7 @@ def compute_similarities(query, corpora, method, model=None):
         sims = lsi_similarities(query, corpora)
 
     return sims
+    # return sorted(sims, key=lambda item: item[1], reverse=True)
 
 
 def most_similar_text(query, corpora, model, N, method, threshold=0.0):

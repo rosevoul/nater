@@ -20,7 +20,7 @@ class Recommender(object):
         self.preprocess_data()
 
     def preprocess_data(self):
-        self.prep = WordPreprocessor(self.data.entities, self.data.aliases)
+        self.prep = WordPreprocessor(self.data.entities, self.data.aliases, self.data.test_blocks_parameters)
 
         # Block description & name keywords preprocessing
         self.test_blocks_n_keywords = self.prep.preprocess_variable_names(self.data.test_blocks_names)
@@ -38,7 +38,7 @@ class Recommender(object):
             self.test_blocks_nd_keywords[i] = list(n_kw)
 
         # Parameters preprocessing
-        self.test_blocks_parameters = self.prep.preprocess_parameters(
+        self.test_blocks_parameters = self.prep.preprocess_block_parameters(
             self.data.test_blocks_parameters)
 
         # Requirements preprocessing
@@ -74,7 +74,7 @@ class Recommender(object):
 
     def extract_step_keywords(self, test_step_description):        
         # Extract, keywords, parameters and values
-        keywords, params_n_vals = self.prep.extract_parameters(test_step_description)
+        keywords, params_n_vals = self.prep.extract_block_parameters(test_step_description)
         # Apply NLP filter to keywords
         filtered_description_keywords = self.prep.nlp_filter(keywords)
         # Apply parameter filter to parameters
@@ -83,44 +83,41 @@ class Recommender(object):
         return filtered_description_keywords, filtered_parameters
 
     def extract_test_keywords(self, test_scenario):
-            filtered_test_title = self.prep.preprocess_variable_names([test_scenario.title])[0]
-            filtered_test_description = self.prep.nlp_filter(test_scenario.description)
-            filtered_test_description = self.prep.remove_test_words(filtered_test_description)
+        filtered_test_title = self.prep.preprocess_variable_names(test_scenario.title)[0]
+        filtered_test_description = self.prep.nlp_filter(test_scenario.description)
+        filtered_test_description = self.prep.remove_test_words(filtered_test_description)
 
-            filtered_test_steps_descriptions = [self.prep.nlp_filter(step[0]) for step in test_scenario.steps]
-            filtered_test_steps_descriptions = [kw for descr in filtered_test_steps_descriptions for kw in descr]
-            filtered_test_steps_expected_results = [self.prep.nlp_filter(step[1]) for step in test_scenario.steps]
-            filtered_test_steps_expected_results = [kw for eres in filtered_test_steps_expected_results for kw in eres]
-           
-            test_keywords = []
-            test_keywords.extend(filtered_test_title + filtered_test_description + 
-                                 filtered_test_steps_descriptions + filtered_test_steps_expected_results)
-            test_keywords = list(set(test_keywords))
-                
-            return test_keywords
-
-    def recommend_test_blocks(self, test_step_description):
+        filtered_test_steps_descriptions = [self.prep.nlp_filter(step.description) for step in test_scenario.steps]
+        filtered_test_steps_descriptions = [kw for descr in filtered_test_steps_descriptions for kw in descr]
         
-        return [self.data.test_blocks_names[i] for i in self.find_top_blocks(test_step_description)]
+        test_keywords = []
+        test_keywords.extend(filtered_test_title + filtered_test_description + 
+                             filtered_test_steps_descriptions)
+        test_keywords = list(set(test_keywords))
+            
+        return test_keywords
 
-    def recommend_reqs(self, test_scenario):
-        return [self.data.reqs_descriptions[i] for i in self.find_top_reqs(test_scenario)]
+    def recommend_test_blocks(self, test_step_description, N=10, method='avg'):
+        return [self.data.test_blocks_names[i] for i in self.find_top_blocks(test_step_description, N, method)]
+
+    def recommend_reqs(self, test_scenario,  N=10, method='tf-idf'):
+        return [self.data.reqs_descriptions[i] for i in self.find_top_reqs(test_scenario, N, method)]
     
-    def recommend_reqs_by_id(self, test_scenario):
-        return [self.data.reqs_ids[i] for i in self.find_top_reqs(test_scenario)]
+    def recommend_reqs_by_id(self, test_scenario, N, method):
+        return [self.data.reqs_ids[i] for i in self.find_top_reqs(test_scenario, N, method)]
     
-    def find_top_blocks(self, test_step_description, N=10, method='avg'):
+    def find_top_blocks(self, test_step_description, N, method):
         description_keywords, parameters = self.extract_step_keywords(test_step_description)
         # Similarity of keywords
         k_similarities = compute_similarities(description_keywords, self.test_blocks_nd_keywords, method, self.model)
         # Similarity of parameters
         p_similarities = parameter_similarities(parameters, self.test_blocks_parameters)
         # Recommender scores
-        top_blocks_indices, self.blocks_scores = assign_scores(10, k_similarities, 0.8, p_similarities, 0.2)
+        top_blocks_indices, self.blocks_scores = assign_scores(N, k_similarities, 0.8, p_similarities, 0.2)
         
         return top_blocks_indices
 
-    def find_top_reqs(self, test_scenario, N=5, method='avg'):
+    def find_top_reqs(self, test_scenario, N, method):
             test_keywords = self.extract_test_keywords(test_scenario)
             top_req_indices, self.req_scores = most_similar_text(test_keywords, self.reqs_keywords, self.model, N, method)
             
@@ -201,7 +198,7 @@ class PhaseIIIRecommender(Recommender):
 
             print("Stack: ", self.stack)
 
-class PhaseIVRecommender(Recommender):
+class RecommenderWithUserFeedback(Recommender):
     """Recommender that incorporates user feedback.
     """
     pass

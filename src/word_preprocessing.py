@@ -34,7 +34,7 @@ class WordPreprocessor(object):
     ]
 
     
-    def __init__(self, entities, aliases, split_by_sentence=False):
+    def __init__(self, entities, aliases, test_blocks_parameters, split_by_sentence=False):
         self.aliases = aliases
         self.split_by_sentence = split_by_sentence
 
@@ -43,8 +43,9 @@ class WordPreprocessor(object):
         self.patterns = [(re.compile(regex), repl)
                          for (regex, repl) in self.REPLACEMENT_PATTERNS]
 
-        parameters, applications, systems = entities
-        self.parameters = [w.lower() for w in parameters]
+        self.all_block_parameters = set([param for block in self.preprocess_block_parameters(test_blocks_parameters) for param in block])
+        spacecraft_parameters, applications, systems = entities
+        self.spacecraft_parameters = [w.lower() for w in spacecraft_parameters]
         applications = [w.lower() for w in applications]
         systems = [w.lower() for w in systems]
         self.domain_specific_words = set(
@@ -90,7 +91,7 @@ class WordPreprocessor(object):
             # filtered_words = (
             #     w for w in filtered_words if w not in self.punctuation)
             # filtered_words = (
-            #     'sparam' if w in self.parameters else w for w in filtered_words)
+            #     'sparam' if w in self.spacecraft_parameters else w for w in filtered_words)
             # filtered_words = (w for w in filtered_words if w in self.domain_specific_words or not any(
             #     c.isdigit() or c in self.invalid_symbols for c in w))
             # preprocessed_data.append(list(filtered_words))
@@ -185,8 +186,25 @@ class WordPreprocessor(object):
         else:
             return [data]
 
-    @staticmethod
-    def extract_parameters(sentence):
+    def identify_block_parameter(self, parameter_parts):
+        parameter_parts.reverse()
+        parameter_candidates = []
+        parameter_part_candidates = [param for param in self.all_block_parameters if parameter_parts[0] in param.lower()]
+
+        i = 1
+        while parameter_part_candidates:
+            parameter_candidates.append(parameter_part_candidates)
+            parameter_part_candidates = [param for param in parameter_candidates[i-1] if parameter_parts[i].lower() in param.lower()]
+            i = i + 1
+        if parameter_candidates:
+            parameter_candidate = parameter_candidates[-1][0]
+            
+            return parameter_candidate
+
+        else: 
+            return "NoPARAM"
+
+    def extract_block_parameters(self, sentence):
         """
         Input: a string, raw natural language sentence
         Ouput: a tuple (keywords, params)
@@ -194,28 +212,23 @@ class WordPreprocessor(object):
                 params: a bag of tuples (parameter, value) that contains the parameters
                         and the corresponding values for the sentence
         """
-        keywords = []
-        params_n_vals = []
+        words = word_tokenize(sentence)
+        param_assignments = words.count('=')
         
-        splits = sentence.split('=')
-        param_num = (len(splits) - 1)
-        keywords = word_tokenize(sentence.replace('=', ' '))
-        
-        if param_num > 0:
-            index = 0
-            for i in range(param_num):
-                param, val = splits[index].split()[-1], splits[index+1].split()[0].rstrip('.')
-                index = index + 1
-                params_n_vals.append((param.lower(), val))
-                keywords.remove(param)
-                keywords.remove(val)
-        else:
+        if not param_assignments:
             params_n_vals = []
-
-        return keywords, params_n_vals
+        
+        params_n_vals = []
+        for _ in range(param_assignments):
+            sid = words.index('=')
+            param, val = self.identify_block_parameter(words[:sid]), words[sid+1]
+            params_n_vals.append((param.lower(), val))
+            del words[sid:sid+2]
+            
+        return words, params_n_vals
     
     @staticmethod
-    def preprocess_parameters(data):
+    def preprocess_block_parameters(data):
         # Extract the block parameters only (without values)
         params_n_vals = (eval(block_params_n_vals) for block_params_n_vals in data) 
         parameters = []

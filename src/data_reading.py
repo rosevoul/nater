@@ -120,7 +120,7 @@ class ModelDataReader(DataReader):
             test_scenarios_info.extend(self.read_excel(
                 file, "Test Design Steps", "Test Design Expected Result", 1))
 
-        print("Test scenarios files... Done.")
+        print("Test scenarios files...", len(test_scenarios_files))
 
         # Read data from Requirements (Excel files)
         reqs_info = []
@@ -130,7 +130,7 @@ class ModelDataReader(DataReader):
             reqs_info.extend(
                 self.read_excel(file, "Sheet1", "Description"))
 
-        print("Requirements files... Done.")
+        print("Requirements files...", len(reqs_files))
 
         # Read data from Documentation (Word files)
         documentation_info = []
@@ -139,7 +139,7 @@ class ModelDataReader(DataReader):
 
         for file in documentation_files:
             documentation_info.extend(self.read_word(file))
-        print("Documentation files... Done.")
+        print("Documentation files...", len(documentation_files))
 
         # Merge data
         docs = []
