@@ -3,8 +3,10 @@ from gensim.models.word2vec import Word2Vec
 from gensim.models import KeyedVectors
 from data_reading import DataReader
 from word_preprocessing import WordPreprocessor
-from suggestions import most_similar_text, assign_scores, compute_similarities, parameter_similarities
+from suggestions import most_similar_text, assign_scores, compute_similarities, parameter_similarities, score_associated_blocks
 import pickle
+import os
+import pandas as pd
 from pprint import pprint
 
 class Recommender(object):
@@ -201,4 +203,55 @@ class PhaseIIIRecommender(Recommender):
 class RecommenderWithUserFeedback(Recommender):
     """Recommender that incorporates user feedback.
     """
-    pass
+    def load_data(self):
+        self.data = DataReader(self.path)
+        self.preprocess_data()
+        self.tests_dataframe = self.load_tests()
+
+    def extract_old_tests(self):
+        timestamps = self.tests_dataframe.timestamp.unique().tolist()
+        tests = []
+        for timestamp in timestamps:
+            test = self.tests_dataframe.loc[self.tests_dataframe['timestamp'] == timestamp, 'block_id'].tolist()
+            tests.append(test)
+        
+        return tests
+
+    def load_tests(self):
+       self.tests_blocks_file = self.path + '/tmp/tests_n_blocks.csv'
+       if os.path.exists(self.tests_blocks_file):
+           return pd.read_csv(self.tests_blocks_file)
+       
+       return pd.DataFrame(columns=['timestamp', 'title', 'step', 'block', 'block_id'])
+
+    def store_test_n_blocks(self, title, steps, blocks):
+        block_ids = [self.data.test_blocks_names.index(block) for block in blocks]
+        timestamp = str(pd.Timestamp.now())
+        # current_test = pd.DataFrame({'timestamp': timestamp,'title': title, 'step': steps, 'block': blocks, 'block_id': block_ids})
+        current_test = pd.DataFrame({'step': steps, 'block': blocks, 'block_id': block_ids})
+        current_test['timestamp'] = timestamp
+        print("TITLE", title)
+        current_test['title'] = title
+        self.tests_dataframe = self.tests_dataframe.append(current_test, ignore_index = True)
+        
+        self.tests_dataframe.to_csv(self.tests_blocks_file, index=False)
+
+    def find_top_blocks(self, test_step_description, selected_blocks, N, method):
+        description_keywords, parameters = self.extract_step_keywords(test_step_description)
+        # Similarity of keywords and parameters
+        k_similarities = compute_similarities(description_keywords, self.test_blocks_nd_keywords, method, self.model)
+        p_similarities = parameter_similarities(parameters, self.test_blocks_parameters)
+        
+        # Association Analysis Confidence scores
+        old_tests = self.extract_old_tests()
+        test_blocks_indices = list(range(len(self.data.test_blocks_names)))
+        
+        if selected_blocks and old_tests:
+            confidence_scores = score_associated_blocks(old_tests, selected_blocks, test_blocks_indices)
+        else:
+            confidence_scores = []
+                
+        # Recommender scores        
+        top_blocks_indices, self.blocks_scores = assign_scores(N, k_similarities, 0.5, p_similarities, 0.1, confidence_scores, 0.4)
+        
+        return top_blocks_indices

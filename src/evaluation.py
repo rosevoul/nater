@@ -29,7 +29,6 @@ def computeMeanReciprocalRank(single_ground_truth_list, ranked_recommendations_l
     for i, single_ground_truth in enumerate(single_ground_truth_list):
         rr.append(computeReciprocalRank(single_ground_truth, ranked_recommendations_lists[i]))
 
-    print(rr)
     return round(mean(rr), ROUND_FLOAT)
 
 

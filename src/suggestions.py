@@ -171,13 +171,18 @@ def score_associated_blocks(old_tests, previous_blocks, test_blocks_indices, min
     return confidence_scores
 
 
-def assign_scores(N, k_sims, k_weight, p_sims, p_weight, threshold=0.0):
+def assign_scores(N, k_sims, k_weight, p_sims, p_weight, conf_scores=None, c_weight=0, threshold=0.0):
     blocks_number = len(k_sims)
     scores = []
     top_N_scores_indices = []
 
     for i in range(blocks_number):
-        score = (k_sims[i][1] * k_weight + p_sims[i][1] * p_weight) / 2
+        if conf_scores:
+            score = (k_sims[i][1] * k_weight + p_sims[i][1] *
+                             p_weight + conf_scores[i] * c_weight) / 3
+        else:
+            score = (k_sims[i][1] * k_weight + p_sims[i][1] * p_weight) / 2
+        
         scores.append((i, score))
 
     sorted_scores = sorted(scores, key=lambda item: item[1], reverse=True)

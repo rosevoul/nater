@@ -107,3 +107,41 @@ def diagram(x, y, xticks, label):
     plt.plot(x, y, label=label)
     plt.legend(loc='best', numpoints=1, fancybox=True)
     plt.xticks(xticks)
+
+
+
+def experiment_user_feedback(number_of_tests, tests_steps, test_blocks_GT, iterations_test_blocks_R):
+    from evaluation import computeMeanReciprocalRank
+
+    N = number_of_tests
+    
+    iteration_MRR_list = []
+
+    for itera in range(len(iterations_test_blocks_R)):
+        iteration_MRR = []
+        for i in range(N):
+            single_test_MRR = computeMeanReciprocalRank(test_blocks_GT[i], iterations_test_blocks_R[itera][i])
+            iteration_MRR.append(single_test_MRR)
+        iteration_MRR_list.append(iteration_MRR)
+    
+    plt.figure()
+    plt.title("User feedback evaluation")
+    plt.xlabel("Tests")
+    plt.ylabel("MRR")
+    
+    for itera in range(len(iterations_test_blocks_R)):
+        diagram(range(1, N + 1), iteration_MRR_list[itera], arange(1, N+1, step=1), label="run" + str(itera))
+
+def experiment_time_performance(number_of_tests, recommend_requirements_time, recommend_test_blocks_time):
+    N = number_of_tests
+    recommend_test_blocks_time_avg = []
+    for i in range(N):
+        avg_time = mean(recommend_test_blocks_time[i])
+        recommend_test_blocks_time_avg.append(avg_time)
+
+    plt.figure()
+    plt.title("Speed of response")
+    plt.xlabel("Tests")
+    plt.ylabel("Time (sec)")
+    diagram(range(1, N + 1), recommend_requirements_time, arange(1, N+1, step=1), label="Requirements")
+    diagram(range(1, N + 1), recommend_test_blocks_time_avg, arange(1, N+1, step=1), label="Test blocks")
