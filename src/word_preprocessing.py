@@ -4,6 +4,7 @@ from nltk import word_tokenize, sent_tokenize, pos_tag
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
+
 class WordPreprocessor(object):
     """Preprocess text word-wise"""
 
@@ -33,7 +34,6 @@ class WordPreprocessor(object):
         (r'milli seconds', 'milliseconds')
     ]
 
-    
     def __init__(self, entities, aliases, test_blocks_parameters, split_by_sentence=False):
         self.aliases = aliases
         self.split_by_sentence = split_by_sentence
@@ -43,7 +43,8 @@ class WordPreprocessor(object):
         self.patterns = [(re.compile(regex), repl)
                          for (regex, repl) in self.REPLACEMENT_PATTERNS]
 
-        self.all_block_parameters = set([param for block in self.preprocess_block_parameters(test_blocks_parameters) for param in block])
+        self.all_block_parameters = set([param for block in self.preprocess_block_parameters(
+            test_blocks_parameters) for param in block])
         spacecraft_parameters, applications, systems = entities
         self.spacecraft_parameters = [w.lower() for w in spacecraft_parameters]
         applications = [w.lower() for w in applications]
@@ -84,18 +85,6 @@ class WordPreprocessor(object):
         preprocessed_data = []
         filtered_words = []
         for words in self.split_data_words:
-            # filtered_words = (w for w in words if not w.isnumeric())
-            # filtered_words = (w.replace('\n', '').replace('\r', '') for w in words)
-            # filtered_words = (w.lower() for w in filtered_words)
-            # filtered_words = (w for w in filtered_words if not w in self.stop_words)
-            # filtered_words = (
-            #     w for w in filtered_words if w not in self.punctuation)
-            # filtered_words = (
-            #     'sparam' if w in self.spacecraft_parameters else w for w in filtered_words)
-            # filtered_words = (w for w in filtered_words if w in self.domain_specific_words or not any(
-            #     c.isdigit() or c in self.invalid_symbols for c in w))
-            # preprocessed_data.append(list(filtered_words))
-
             preprocessed_data.append(self.nlp_filter(words))
 
         # Remove empty lists
@@ -121,41 +110,44 @@ class WordPreprocessor(object):
         return new_string
 
     def preprocess_variable_names(self, data):
-        # Process variable-like names(containing uppercase and camel case) to keywords        
+        # Process variable-like names(containing uppercase and camel case) to
+        # keywords
         names = []
         for variable_name in data:
             name_keywords = []
-            name_split = variable_name.split('_') 
+            name_split = variable_name.split('_')
             left = name_split[0]
             name_keywords = self.split_uppercase(left)
             if len(name_split) > 1:
                 right = name_split[1:]
-                name_keywords.extend(self.split_uppercase(''.join(right)))            
+                name_keywords.extend(self.split_uppercase(''.join(right)))
             names.append(name_keywords)
-        
-        return names
 
+        return names
 
     def nlp_filter(self, bag_of_words):
         """ Applies nlp filter in a sentence represented by a bag of words
         Input: a string, raw natural language sentence or a bag of words representing a sentence
         Ouput: a filtered bag of words
         """
-        
+
         if type(bag_of_words) != list:
             bag_of_words = word_tokenize(bag_of_words)
-        
+
         filtered_words = (w.lower() for w in bag_of_words)
-        filtered_words = (w for w in filtered_words if not w in self.stop_words)
-        filtered_words = (w for w in filtered_words if not w in self.punctuation)
-        filtered_words = (w for w in filtered_words if w in self.domain_specific_words 
-                            or not any(c.isdigit() or c in self.invalid_symbols for c in w))
+        filtered_words = (
+            w for w in filtered_words if not w in self.stop_words)
+        filtered_words = (
+            w for w in filtered_words if not w in self.punctuation)
+        filtered_words = (w for w in filtered_words if w in self.domain_specific_words
+                          or not any(c.isdigit() or c in self.invalid_symbols for c in w))
 
         return list(filtered_words)
 
     def remove_test_words(self, bag_of_words):
         test_word_parts = ['test', 'verif']
-        filtered_words = (w for w in bag_of_words if not any(word_part in w for word_part in test_word_parts))
+        filtered_words = (w for w in bag_of_words if not any(
+            word_part in w for word_part in test_word_parts))
 
         return list(filtered_words)
 
@@ -172,9 +164,10 @@ class WordPreprocessor(object):
             for i, sent in enumerate(sents):
                 if i == 0:
                     pos = pos_tag(word_tokenize('I ' + sent))
-                else: 
+                else:
                     pos = pos_tag(word_tokenize(sent))
-                verbs = [w[0] for w in pos if w[1].startswith('V') and w[1] != 'VBG']
+                verbs = [w[0]
+                         for w in pos if w[1].startswith('V') and w[1] != 'VBG']
                 if verbs:
                     previous_verb = verbs
                     sent_verb.append(verbs)
@@ -189,19 +182,21 @@ class WordPreprocessor(object):
     def identify_block_parameter(self, parameter_parts):
         parameter_parts.reverse()
         parameter_candidates = []
-        parameter_part_candidates = [param for param in self.all_block_parameters if parameter_parts[0] in param.lower()]
+        parameter_part_candidates = [
+            param for param in self.all_block_parameters if parameter_parts[0] in param.lower()]
 
         i = 1
         while parameter_part_candidates:
             parameter_candidates.append(parameter_part_candidates)
-            parameter_part_candidates = [param for param in parameter_candidates[i-1] if parameter_parts[i].lower() in param.lower()]
+            parameter_part_candidates = [param for param in parameter_candidates[
+                i - 1] if parameter_parts[i].lower() in param.lower()]
             i = i + 1
         if parameter_candidates:
             parameter_candidate = parameter_candidates[-1][0]
-            
+
             return parameter_candidate
 
-        else: 
+        else:
             return "NoPARAM"
 
     def extract_block_parameters(self, sentence):
@@ -214,26 +209,29 @@ class WordPreprocessor(object):
         """
         words = word_tokenize(sentence)
         param_assignments = words.count('=')
-        
+
         if not param_assignments:
             params_n_vals = []
-        
+
         params_n_vals = []
         for _ in range(param_assignments):
             sid = words.index('=')
-            param, val = self.identify_block_parameter(words[:sid]), words[sid+1]
+            param, val = self.identify_block_parameter(
+                words[:sid]), words[sid + 1]
             params_n_vals.append((param.lower(), val))
-            del words[sid:sid+2]
-            
+            del words[sid:sid + 2]
+
         return words, params_n_vals
-    
+
     @staticmethod
     def preprocess_block_parameters(data):
         # Extract the block parameters only (without values)
-        params_n_vals = (eval(block_params_n_vals) for block_params_n_vals in data) 
+        params_n_vals = (eval(block_params_n_vals)
+                         for block_params_n_vals in data)
         parameters = []
         for block_params_n_vals in params_n_vals:
-            block_parameters = [param.lower() for (param, val) in block_params_n_vals]
+            block_parameters = [param.lower()
+                                for (param, val) in block_params_n_vals]
             parameters.append(block_parameters)
 
         return parameters
@@ -243,11 +241,10 @@ class WordPreprocessor(object):
         r = []
         l = False
         for c in s:
-            # l being: last character was not uppercase
             if l and c.isupper():
                 r.append(' ')
             l = not c.isupper() and not c.isdigit()
             r.append(c)
         result = ''.join(r)
-        
-        return result.lower().split()        
+
+        return result.lower().split()

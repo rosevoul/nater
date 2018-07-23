@@ -55,11 +55,13 @@ class TestScenario:
 
         if order == 'important':
             for i in range(N):
-                ts = TestStep(i, step_descriptions[i], step_expected_results[i])
+                ts = TestStep(i, step_descriptions[
+                              i], step_expected_results[i])
                 steps.append(ts)
         else:
             for i in range(len(step_descriptions)):
-                ts = TestStep(i, step_descriptions[i], step_expected_results[i])
+                ts = TestStep(i, step_descriptions[
+                              i], step_expected_results[i])
                 steps.append(ts)
 
         return steps

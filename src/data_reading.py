@@ -1,18 +1,17 @@
 import os
-import pickle
-import pandas as pd
 import docx
+import pandas as pd
 
 
 class DataReader(object):
-    """Read the necessary data from various sources related to the Test Automation."""
+    """Read the necessary data from various sources related to the Test Routine Automation."""
 
     def __init__(self, path):
         self.path = path
         self.test_blocks_names, self.test_blocks_descriptions,  self.test_blocks_preconditions, \
-                                self.test_blocks_postconditions, self.test_blocks_parameters = self.read_test_blocks()
+            self.test_blocks_postconditions, self.test_blocks_parameters = self.read_test_blocks()
         self.reqs_ids, self.reqs_names, self.reqs_descriptions, \
-                                self.reqs_cover_statuses = self.read_requirements()
+            self.reqs_cover_statuses = self.read_requirements()
         self.entities = self.read_entities()
         self.aliases = self.read_aliases()
 
@@ -27,7 +26,6 @@ class DataReader(object):
         test_blocks_preconditions = test_blocks_info["precondition"].tolist()
         test_blocks_postconditions = test_blocks_info["postcondition"].tolist()
         test_blocks_parameters = test_blocks_info["parameters"].tolist()
-        print("Test blocks... Done.")
 
         return (test_blocks_names, test_blocks_descriptions, test_blocks_preconditions,
                 test_blocks_postconditions, test_blocks_parameters)
@@ -42,8 +40,7 @@ class DataReader(object):
         reqs_names = reqs_info["name"].tolist()
         reqs_descriptions = reqs_info["description"].tolist()
         reqs_cover_statuses = reqs_info["cover_status"].tolist()
-     
-        print("Requirements... Done.")
+
         return (reqs_ids, reqs_names, reqs_descriptions, reqs_cover_statuses)
 
     def read_entities(self):
@@ -72,7 +69,6 @@ class ModelDataReader(DataReader):
         self.docs = self.read_docs()
         self.test_steps = self.read_test_steps()
         self.implemented_tests = self.read_implemented_tests()
-        self.human_blocks, self.human_blocks_children = self.read_human_blocks()
         self.correct_spelled_data = self.read_correct_spelled_data()
 
     def read_docs(self):
@@ -132,7 +128,7 @@ class ModelDataReader(DataReader):
 
         print("Requirements files...", len(reqs_files))
 
-        # Read data from Documentation (Word files)
+        # Read data from Software Documentation (Word files)
         documentation_info = []
         documentation_files = self.get_files(
             documentation_dir_path, ".docx", include_subdirs=True)
@@ -166,15 +162,6 @@ class ModelDataReader(DataReader):
         implemented_tests = self.get_files(implemented_tests_path, ".csv")
 
         return implemented_tests
-
-    def read_human_blocks(self):
-        human_blocks_path = os.path.join(self.path, "parsed/test-blocks")
-        human_blocks = pd.read_csv(
-            human_blocks_path + "/human_blocks_with_children.csv")
-        human_blocks_children = pickle.load(
-            open(human_blocks_path + "/human_blocks_children.bin", "rb"))
-
-        return (human_blocks, human_blocks_children)
 
     def read_correct_spelled_data(self):
         sum_documents_dir_path = os.path.join(self.path, "sum_docs")

@@ -14,7 +14,6 @@ class LexiconCreator(object):
 		
 		cls.write_to_file(file_path, sorted_words)
 
-	# TODO store "lexicon.txt" in appropriate location	
 	@staticmethod
 	def write_to_file(file_path, words):
 	    with open (file_path, "w") as f:

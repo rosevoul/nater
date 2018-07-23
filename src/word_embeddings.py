@@ -6,17 +6,17 @@ class WordEmbeddings(object):
 		self.arg = arg
 
 	@staticmethod
-	def generate_model(dataset, method="skipgram", negative=True):
+	def generate_model(dataset, method, negative, size):
 
 		training_data = dataset
 		
 		if method is "skipgram" and negative:
-			model = Word2Vec(training_data, min_count=1, size=100, window=5, sg=1)
+			model = Word2Vec(training_data, size=size, min_count=1, window=5, sg=1)
 		elif method is "skipgram" and not negative:
-			model = Word2Vec(training_data, min_count=1, size=100, window=5, sg=1, negative=0)
+			model = Word2Vec(training_data, size=size, min_count=1, window=5, sg=1, negative=0)
 		elif method is "cbow" and negative:
-			model = Word2Vec(training_data, min_count=1, size=100, window=5)
+			model = Word2Vec(training_data, size=size, min_count=1, window=5)
 		else:
-			model = Word2Vec(training_data, min_count=1, size=100, window=5, negative=0)
+			model = Word2Vec(training_data, size=size, min_count=1, window=5, negative=1)
 
 		return model
