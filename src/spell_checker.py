@@ -1,17 +1,16 @@
-"""Spelling corrector customizing the Enchant library"""
-
 import enchant
 from nltk.metrics import edit_distance
+from collections import Counter
+from operator import itemgetter
 
 
 class SpellCorrector(object):
-    """Automatically replace misspelled words based on the domain specific dictionary """
-    """Spelling corrector using the Enchant library
-	
-	Attributes:
-	    max_dist (int): Refers to maximum editing distance of the checked word to the correction word
-	    lexicon (list): Dictionary of words
-	"""
+    """Automatically replace misspelled words based on the domain specific dictionary using the Enchant library
+
+        Attributes:
+            max_dist (int): Refers to maximum editing distance of the checked word to the correction word
+            lexicon (list): Dictionary of words
+        """
 
     def __init__(self, lexicon, max_dist=2):
         """Constructor
@@ -54,3 +53,25 @@ class SpellCorrector(object):
             return suggestions[0]
         else:
             return 'None'
+
+
+class LexiconCreator(object):
+    """Create a lexicon using a custom corpus."""
+
+    @classmethod
+    def create(cls, file_path, base_corpus):
+        flat_base_corpus = [
+            word for sublist in base_corpus for word in sublist]
+        frequencies = Counter(flat_base_corpus)
+
+        sorted_words = sorted(frequencies.items(),
+                              reverse=True, key=itemgetter(1))
+        sorted_words = [w[0] for w in sorted_words]
+
+        cls.write_to_file(file_path, sorted_words)
+
+    @staticmethod
+    def write_to_file(file_path, words):
+        with open(file_path, "w") as f:
+            for w in words:
+                f.write('{0}\n'.format(w))

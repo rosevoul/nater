@@ -5,7 +5,7 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 
 
-class WordPreprocessor(object):
+class NlpFilter(object):
     """Preprocess text word-wise"""
 
     REPLACEMENT_PATTERNS = [
@@ -85,7 +85,7 @@ class WordPreprocessor(object):
         preprocessed_data = []
         filtered_words = []
         for words in self.split_data_words:
-            preprocessed_data.append(self.nlp_filter(words))
+            preprocessed_data.append(self.extract_words(words))
 
         # Remove empty lists
         preprocessed_data = [lst for lst in preprocessed_data if lst]
@@ -125,7 +125,7 @@ class WordPreprocessor(object):
 
         return names
 
-    def nlp_filter(self, bag_of_words):
+    def extract_words(self, bag_of_words):
         """ Applies nlp filter in a sentence represented by a bag of words
         Input: a string, raw natural language sentence or a bag of words representing a sentence
         Ouput: a filtered bag of words

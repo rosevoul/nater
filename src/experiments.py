@@ -24,7 +24,7 @@ class ExperimentI:
             self.test_scenarios.append(test_scenario)
 
     def load_evaluation_test_scenario(self, path):
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         read_excel = ModelDataReader.read_excel
 
         tid = read_excel(path, "Test_Info", "Test ID", 0)
@@ -85,7 +85,7 @@ class ExperimentII:
         self.visualize_experiment(test_steps, test_blocks_GT, method_blocks_R)
 
     def prepare_experiment(self):
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         get_files = ModelDataReader.get_files
 
         test_scenarios_dir_path = "../data/advanced/evaluation_experiments/implemented_test_cases/experiments_test_scenarios/atomic/"
@@ -97,7 +97,7 @@ class ExperimentII:
 
     def load_evaluation_test_scenario(self, path):
         from ast import literal_eval
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         read_excel = ModelDataReader.read_excel
 
         step_ids = read_excel(path, "Steps_n_Blocks_Simple", "Step ID", 0)
@@ -161,7 +161,7 @@ class ExperimentModels:
         self.visualize_experiment(test_steps, test_blocks_GT, method_blocks_R)
 
     def prepare_experiment(self):
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         get_files = ModelDataReader.get_files
 
         test_scenarios_dir_path = "../data/advanced/evaluation_experiments/implemented_test_cases/experiments_test_scenarios/atomic/"
@@ -173,7 +173,7 @@ class ExperimentModels:
 
     def load_evaluation_test_scenario(self, path):
         from ast import literal_eval
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         read_excel = ModelDataReader.read_excel
 
         step_ids = read_excel(path, "Steps_n_Blocks_Simple", "Step ID", 0)
@@ -236,7 +236,7 @@ class ExperimentUserFeedback:
             tests_steps, tests_blocks_GT, method_blocks_R)
 
     def prepare_experiment(self):
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         get_files = ModelDataReader.get_files
 
         test_scenarios_dir_path = "../data/advanced/evaluation_experiments/implemented_test_cases/experiments_test_scenarios/atomic/"
@@ -248,7 +248,7 @@ class ExperimentUserFeedback:
 
     def load_evaluation_test_scenario(self, path):
         from ast import literal_eval
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         read_excel = ModelDataReader.read_excel
 
         tid = read_excel(path, "Test_Info", "Test ID", 0)
@@ -333,7 +333,7 @@ class ExperimentTimePerformance:
         self.visualize_experiment(reqs_R_times, blocks_R_times)
 
     def prepare_experiment(self):
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         get_files = ModelDataReader.get_files
 
         test_scenarios_dir_path = "../data/advanced/evaluation_experiments/implemented_test_cases/experiments_test_scenarios/atomic/"
@@ -345,7 +345,7 @@ class ExperimentTimePerformance:
 
     def load_evaluation_test_scenario(self, path):
         from ast import literal_eval
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         read_excel = ModelDataReader.read_excel
 
         tid = read_excel(path, "Test_Info", "Test ID", 0)
@@ -408,7 +408,7 @@ class ExperimentTestCoverage:
             automated_test_steps_GT, traced_requirements_GT, automated_test_steps_S, traced_requirements_S)
 
     def prepare_experiment(self):
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         get_files = ModelDataReader.get_files
 
         test_scenarios_dir_path = "../data/advanced/evaluation_experiments/implemented_test_cases/experiments_test_scenarios/atomic/"
@@ -420,7 +420,7 @@ class ExperimentTestCoverage:
 
     def load_evaluation_test_scenario(self, path):
         from ast import literal_eval
-        from data_reading import ModelDataReader
+        from data_container import ModelDataReader
         read_excel = ModelDataReader.read_excel
 
         tid = read_excel(path, "Test_Info", "Test ID", 0)

@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 from numpy import mean, arange
-from evaluation import compute_PrecisionRecallF1
+from evaluation import compute_PrecisionRecallF1, computeMeanReciprocalRank
 
 
 def compute_PRF_at_K(K, query_list, ground_truth_list, recom_list):
-    
+
     PRF_list = []
     for i in range(len(query_list)):
         PRF = compute_PrecisionRecallF1(
@@ -128,7 +128,6 @@ def diagram(x, y, xticks, label):
 
 
 def experiment_user_feedback(number_of_tests, tests_steps, test_blocks_GT, iterations_test_blocks_R):
-    from evaluation import computeMeanReciprocalRank
 
     N = number_of_tests
 

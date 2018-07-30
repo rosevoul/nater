@@ -1,8 +1,8 @@
 from copy import deepcopy
 from gensim.models.word2vec import Word2Vec
 from gensim.models import KeyedVectors
-from data_reading import DataReader
-from word_preprocessing import WordPreprocessor
+from data_container import DataReader
+from nlp_filter import NlpFilter
 from suggestions import *
 import pickle
 import os
@@ -25,7 +25,7 @@ class Recommender(object):
         self.preprocess_data()
 
     def preprocess_data(self):
-        self.prep = WordPreprocessor(
+        self.prep = NlpFilter(
             self.data.entities, self.data.aliases, self.data.test_blocks_parameters)
 
         # Block description & name keywords preprocessing
@@ -33,7 +33,7 @@ class Recommender(object):
             self.data.test_blocks_names)
         self.test_blocks_d_keywords = []
         for d in self.data.test_blocks_descriptions:
-            filtered_keywords = self.prep.nlp_filter(d)
+            filtered_keywords = self.prep.extract_words(d)
             self.test_blocks_d_keywords.append(filtered_keywords)
 
         # Merge the keywords
@@ -51,7 +51,7 @@ class Recommender(object):
         # Requirements preprocessing
         self.reqs_keywords = []
         for rd in self.data.reqs_descriptions:
-            filtered_req_keywords = self.prep.nlp_filter(rd)
+            filtered_req_keywords = self.prep.extract_words(rd)
             self.reqs_keywords.append(list(set(filtered_req_keywords)))
 
     def inspect_test_block(self, test_block_name):
@@ -83,7 +83,7 @@ class Recommender(object):
         keywords, params_n_vals = self.prep.extract_block_parameters(
             test_step_description)
         # Apply NLP filter to keywords
-        filtered_description_keywords = self.prep.nlp_filter(keywords)
+        filtered_description_keywords = self.prep.extract_words(keywords)
         # Apply parameter filter to parameters
         filtered_parameters = [pv[0]for pv in params_n_vals if params_n_vals]
 
@@ -92,12 +92,12 @@ class Recommender(object):
     def extract_test_keywords(self, test_scenario):
         filtered_test_title = self.prep.preprocess_variable_names(test_scenario.title)[
             0]
-        filtered_test_description = self.prep.nlp_filter(
+        filtered_test_description = self.prep.extract_words(
             test_scenario.description)
         filtered_test_description = self.prep.remove_test_words(
             filtered_test_description)
 
-        filtered_test_steps_descriptions = [self.prep.nlp_filter(
+        filtered_test_steps_descriptions = [self.prep.extract_words(
             step.description) for step in test_scenario.steps]
         filtered_test_steps_descriptions = [
             kw for descr in filtered_test_steps_descriptions for kw in descr]
@@ -182,7 +182,7 @@ class PhaseIIIRecommender(Recommender):
         prec = self.data.test_blocks_preconditions[bi]
         if prec == 'The action has been performed':
             prec = ''
-        precondition_keywords = self.prep.nlp_filter(
+        precondition_keywords = self.prep.extract_words(
             prec)
 
         if precondition_keywords:
