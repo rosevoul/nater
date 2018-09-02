@@ -1,4 +1,5 @@
 ![alt text](https://github.com/rosevoul/media/blob/master/nater/nater-logo.png)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/rosevoul/nater/blob/master/LICENSE)
 
 # Natural Test Routine
 
