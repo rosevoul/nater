@@ -1,8 +1,7 @@
 ![alt text](https://github.com/rosevoul/media/blob/master/nater/nater-logo.png)
----------
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/rosevoul/nater/blob/master/LICENSE)
 
 # Natural Test Routine
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://github.com/rosevoul/nater/blob/master/LICENSE)
 
 Nater is an open-source recommendation engine for automating a test routine using natural language processing techniques. 
 It is based on the word embeddings generated from software documents in order to employ a recommender system which guides the creation of automated test scenarios and the tracing of covered requirements. 
