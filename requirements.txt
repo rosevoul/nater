@@ -18,7 +18,7 @@ gensim==3.4.0
 idna==2.6
 inquirer==2.2.0
 ipykernel==4.8.2
-ipython==6.3.1
+ipython==7.16.3
 ipython-genutils==0.2.0
 isort==4.3.4
 jedi==0.12.0
